@@ -14,7 +14,7 @@ module VPU_CONTROLLER
     input   wire    [SRAM_R_PORT_CNT-1:0]   opget_done_i,
     output  wire                            req_queue_rden_o,
     //output  wire    [SRAM_R_PORT_CNT-1:0]   opget_reset_cmd_o,
-    output  wire                            operand_queue_rden_o,
+    output  wire                            operand_queue_rden_o[SRAM_R_PORT_CNT-1:0],
 
     input   wire                            wb_done_i,
 
@@ -86,6 +86,12 @@ module VPU_CONTROLLER
     end
     assign  reset_cmd_o                     = reset_cmd;
     assign  req_queue_rden_o                = req_queue_rden;
-    assign  operand_queue_rden_o            = operand_queue_rden;
+
+    genvar k;
+    generate
+        for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : PACKING_OPGET_DONE
+            assign operand_queue_rden_o[k]  = (req_queue_rden & req_if.rvalid[k]);
+        end
+    endgenerate
     
 endmodule

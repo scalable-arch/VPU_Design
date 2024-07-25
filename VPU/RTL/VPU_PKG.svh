@@ -5,6 +5,13 @@ package VPU_PKG;
 
     // VPU Constraints
     // used localparam so that they cannot modified
+
+    /* Model Config */
+    localparam  DIM_SIZE                    = 512; // N
+    localparam  ELEM_WIDTH                  = 16; // BF16
+    localparam  ELEM_PER_DIM_CNT            = (DIM_SIZE/ELEM_WIDTH);
+
+    /* SRAM Config */
     localparam  SRAM_BANK_CNT               = 4;
     localparam  SRAM_BANK_CNT_LG2           = $clog2(SRAM_BANK_CNT);
     localparam  SRAM_BANK_DEPTH             = 1024;
@@ -15,35 +22,29 @@ package VPU_PKG;
     localparam  SRAM_SIZE_LG2               = $clog2(SRAM_SIZE);
     localparam  SRAM_DATA_WIDTH             = 512;
     localparam  SRAM_DATA_WIDTH_LG2         = $clog2(SRAM_DATA_WIDTH);
-    localparam  SRAM_R_PORT_CNT             = 3;
-    localparam  SRAM_W_PORT_CNT             = 1;
 
-    localparam  VEC_LEN                     = 32;
-    localparam  VEC_LEN_LG2                 = $clog2(VEC_LEN);
-    
-    localparam  OPCODE_WIDTH                = 8;
-    localparam  OPERAND_WIDTH               = 16;
-    localparam  OPERAND_ADDR_WIDTH          = 32;
+    /* VPU Component Config */
+    localparam  SRAM_R_PORT_CNT             = SRC_OPERAND_CNT;
+    localparam  SRAM_W_PORT_CNT             = DST_OPERAND_CNT;
+    localparam  REQ_FIFO_DEPTH              = 16;
+    localparam  REQ_FIFO_DEPTH_LG2          = $clog2(REQ_FIFO_DEPTH);
+    localparam  VLANE_CNT                   = 16;
+    localparam  EXEC_CNT                    = ELEM_PER_DIM_CNT/VLANE_CNT;
+    localparam  EXEC_CNT_LG2                = $clog2(EXEC_CNT);
     localparam  OPERAND_QUEUE_DEPTH         = 2;
+
+    /* VPU Instruction Config */
+    localparam  INSTR_WIDTH                 = 136;
+    localparam  OPCODE_WIDTH                = 8;
+    localparam  OPERAND_WIDTH               = ELEM_WIDTH;
+    localparam  OPERAND_ADDR_WIDTH          = 32;
     localparam  SRC_OPERAND_CNT             = 3;
     localparam  SRC_OPERAND_CNT_LG2         = $clog2(SRC_OPERAND_CNT);
     localparam  DST_OPERAND_CNT             = 1;
     localparam  DST_OPERAND_CNT_LG2         = $clog2(SRC_OPERAND_CNT);
-    localparam  OPERAND_CNT                 = SRC_OPERAND_CNT + DST_OPERAND_CNT;
-    //localparam  SRC_ADDR_WIDTH              = 32;
-    //localparam  DST_ADDR_WIDTH              = 32;
-    localparam  INSTR_WIDTH                 = 136;
-    
-    localparam  REQ_FIFO_DEPTH              = 16;
-    localparam  REQ_FIFO_DEPTH_LG2          = $clog2(REQ_FIFO_DEPTH);
-
-    localparam  VLANE_CNT                   = 16;
-
-    localparam  DIM_SIZE                    = 512;
-    localparam  DIM_ELEM_CNT                = (DIM_SIZE/OPERAND_WIDTH);
-
-    localparam  EXEC_CNT                    = DIM_SIZE/OPERAND_WIDTH/VLANE_CNT;
-    localparam  EXEC_CNT_LG2                = $clog2(EXEC_CNT);
+    localparam  TOTAL_OPERAND_CNT           = SRC_OPERAND_CNT + DST_OPERAND_CNT;
+    localparam  MAX_DELAY                   = 8;
+    localparam  MAX_DELAY_LG2               = $clog2(MAX_DELAY);
 
     /*
     * Cache Address Mapping
@@ -71,11 +72,25 @@ package VPU_PKG;
 
     // Opcode
     typedef enum logic [7:0] { 
-        VPU_H2D_REQ_OPCODE_IADD             = 8'h01,
-        VPU_H2D_REQ_OPCODE_ISUB             = 8'h02,
-        VPU_H2D_REQ_OPCODE_FADD             = 8'h03,
+        VPU_H2D_REQ_OPCODE_IADD             = 8'h01, 
+        VPU_H2D_REQ_OPCODE_ISUB             = 8'h02, 
+        VPU_H2D_REQ_OPCODE_IMUL             = 8'h03,
+        VPU_H2D_REQ_OPCODE_IDIV             = 8'h04,
+        VPU_H2D_REQ_OPCODE_ITF              = 8'h05, // Integer to Float
+        VPU_H2D_REQ_OPCODE_IMAX             = 8'h06, 
+
+        VPU_H2D_REQ_OPCODE_FADD             = 8'h07,
+        VPU_H2D_REQ_OPCODE_FSUB             = 8'h08,
+        VPU_H2D_REQ_OPCODE_FMUL             = 8'h09,
+        VPU_H2D_REQ_OPCODE_FDIV             = 8'h0A,
+        VPU_H2D_REQ_OPCODE_FAVG             = 8'h0B,
+        VPU_H2D_REQ_OPCODE_FSQRT            = 8'h0C,
+        VPU_H2D_REQ_OPCODE_FTI              = 8'h0D, // Float to Integer
+        VPU_H2D_REQ_OPCODE_FMAX             = 8'h0E,
         //...
     } vpu_h2d_req_opcode_t;
+
+
 
     // VPU Instruction
     typedef struct packed {
@@ -98,7 +113,7 @@ package VPU_PKG;
     function automatic [OPERAND_ADDR_WIDTH-1:0]
                                         get_opcode(input vpu_h2d_req_instr_t instr);
         //get_src_operand                     = {SRAM_BANK_DEPTH_LG2{1'b0}};  // 0 padding
-        get_opcode                          = instr[OPERAND_CNT*(OPERAND_ADDR_WIDTH)+:OPCODE_WIDTH];
+        get_opcode                          = instr[TOTAL_OPERAND_CNT*(OPERAND_ADDR_WIDTH)+:OPCODE_WIDTH];
     endfunction
 
 endpackage /* VPU_PKG */

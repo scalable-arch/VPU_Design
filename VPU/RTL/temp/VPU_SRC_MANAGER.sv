@@ -18,7 +18,7 @@ module VPU_SRC_PORT_MANAGER
     // From/To SRAM
     VPU_SRC_PORT_IF.host                            vpu_src_port_if, 
 
-    // To VLANE
+    // From/To VLANE
     input   wire                                    rden_i[SRAM_R_PORT_CNT],
     output  logic   [OPERAND_WIDTH*VLANE_CNT-1:0]   rdata_o[SRAM_R_PORT_CNT],
     output  logic                                   rdempty_o[SRAM_R_PORT_CNT],

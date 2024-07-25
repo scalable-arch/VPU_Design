@@ -84,7 +84,7 @@ module VPU_WB_UNIT
             S_PACK: begin
                 if(wb_data_valid_i) begin
                     wb_data_n[wb_data_wptr+:(OPERAND_WIDTH*VLANE_CNT)] = wb_data_i;
-                    wb_data_wptr_n          = wb_data_wptr + (OPCODE_WIDTH*VEC_LEN);
+                    wb_data_wptr_n          = wb_data_wptr + (OPCODE_WIDTH*VLANE_CNT);
                     if(wb_data_wptr_n == EXEC_CNT) begin
                         state_n             = S_WB;
                         wb_data_wptr_n      = {EXEC_CNT_LG2{1'b0}};

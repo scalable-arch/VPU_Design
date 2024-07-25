@@ -7,7 +7,7 @@ module VPU_SRC_PORT_CONTROLLER
     input   wire                            clk,
     input   wire                            rst_n,
 
-    //From REQ_IF.dst                            
+    //From REQ_IF.src                            
     input   wire                            rvalid_i,
     input   wire [OPERAND_ADDR_WIDTH-1:0]   raddr_i,
     input   wire                            valid_i,
@@ -18,12 +18,12 @@ module VPU_SRC_PORT_CONTROLLER
     output  logic                           done_o,
 
     // From/To OPERAND_QUEUE
-    output  logic [DIM_SIZE-1:0]            wdata_o,
+    output  logic [SRAM_DATA_WIDTH-1:0]     wdata_o,
     output  logic                           wren_o,
     input   wire                            wrempty_i,
     input   wire                            wrfull_i,
 
-    //output  [(OPERAND_WIDTH*VLANE_CNT)-1:0] rdata_o, // [16bit*16] = 256bit;
+    // From/To SRAM_INCT
     SRAM_R_PORT_IF.host                     sram_rd_if
 );
     import VPU_PKG::*;
@@ -33,10 +33,10 @@ module VPU_SRC_PORT_CONTROLLER
     localparam  S_WAIT                      = 2'b10;
     localparam  S_DONE                      = 2'b11;
 
-    //Register File
 
-    // FSM State
+    // State
     logic   [1:0]                           state,      state_n;
+
     // SRAM_R_PORT_IF
     logic                                   req,        req_n;
     logic   [SRAM_BANK_CNT_LG2-1:0]         rid,        rid_n;
@@ -44,13 +44,12 @@ module VPU_SRC_PORT_CONTROLLER
     logic                                   reb,        reb_n;
     logic                                   rlast,      rlast_n;
 
-    // From REQ_IF.dst
-    logic                                   ready;
-    logic                                   done;
+    // To OPERAND_QUEUE
+    logic                                   wren;
 
-    // From/To FIFO
-    logic                                   wren,       wren_n;
-                                    
+    // To VPU_CONTROLLER
+    logic                                   done;
+                            
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             // SRAM IF
@@ -60,9 +59,6 @@ module VPU_SRC_PORT_CONTROLLER
             addr                            <= {SRAM_BANK_DEPTH_LG2{1'b0}};
             reb                             <= 1'b1;
             rlast                           <= 1'b0;
-
-            //FIFO IF
-            wren                            <= 1'b0;
         end
         else begin
             // SRAM IF
@@ -72,9 +68,6 @@ module VPU_SRC_PORT_CONTROLLER
             addr                            <= addr_n;
             reb                             <= reb_n;
             rlast                           <= rlast_n;
-
-            //FIFO IF
-            wren                            <= wren_n;
         end
     end
 
@@ -85,15 +78,12 @@ module VPU_SRC_PORT_CONTROLLER
         addr_n                              = addr;
         reb_n                               = reb;
         rlast_n                             = rlast;
-        
-        ready                               = 1'b0;
+    
+        wren                                = 1'b0;
         done                                = 1'b0;
         
-        wren_n                              = wren;
-
         case(state)
             S_IDLE: begin
-                ready                       = 1'b1;
                 if(valid_i) begin
                     if(rvalid_i) begin
                         state_n             = S_VALID;
@@ -122,13 +112,12 @@ module VPU_SRC_PORT_CONTROLLER
             S_WAIT: begin
                 if(sram_rd_if.rvalid) begin
                     state_n                 = S_DONE;
-                    wren_n                  = 1'b1;
+                    wren                    = 1'b1;
                 end
             end
 
             S_DONE: begin
                 done                        = 1'b1;
-                wren_n                      = 1'b0;
                 if(reset_cmd_i) begin
                     state_n                 = S_IDLE;
                 end
@@ -136,20 +125,18 @@ module VPU_SRC_PORT_CONTROLLER
         endcase
     end
 
-    // Wiring Assignment
+    // SRAM_IF
     sram_rd_if.req                          = req;
     sram_rd_if.rid                          = rid;
     sram_rd_if.addr                         = addr;
     sram_rd_if.reb                          = reb;
     sram_rd_if.rlast                        = rlast;
 
-    // REQ_IF
-    ready_o                                 = ready;
-
-    // FSM_IF
-    done_o                                  = done;
-
-    // FIFO IF
+    // OPERAND_QUEUE
     wren_o                                  = wren;
     wdata_o                                 = sram_rd_if.rdata;
+
+    // VPU_CONTROLLER
+    done_o                                  = done;
+    
 endmodule
