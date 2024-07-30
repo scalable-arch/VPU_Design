@@ -1,12 +1,12 @@
 // All transaction classes must be extended from the uvm_sequence_item base class.
-class packet extends uvm_sequence_item;
+class req_packet extends uvm_sequence_item;
 
     rand bit [7:0]  opcode;
     rand bit [31:0] src0, src1, src2;
     rand bit [31:0] dst0;
     rand bit        we;
 
-    `uvm_object_utils_begin(packet)
+    `uvm_object_utils_begin(req_packet)
         `uvm_field_int(opcode, UVM_ALL_ON | UVM_NOCOMPARE)
         `uvm_field_int(src0, UVM_ALL_ON | UVM_NOCOMPARE)
         `uvm_field_int(src1, UVM_ALL_ON | UVM_NOCOMPARE)
@@ -19,12 +19,12 @@ class packet extends uvm_sequence_item;
         we > 'd0;
     }
 
-    function new(string name = "packet");
+    function new(string name = "req_packet");
         super.new(name);
         `uvm_info("TRACE", $sformatf("%m"), UVM_HIGH);
     endfunction: new
 
-endclass: packet
+endclass: req_packet
     
 class sram_read_tr extends uvm_sequence_item;
     rand bit [1:0] sa, da;
@@ -41,7 +41,6 @@ class sram_read_tr extends uvm_sequence_item;
         `uvm_info("TRACE", $sformatf("%m"), UVM_HIGH);
     endfunction: new
 endclass: sram_read_tr
-
 
 
 class sram_write_tr extends uvm_sequence_item;

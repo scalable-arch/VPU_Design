@@ -27,17 +27,15 @@ class scoreboard extends uvm_scoreboard;
     task run_phase(uvm_phase phase);
 		forever
 		begin
-			before_export.get(tr_bf);
+            for(int i = 0; i < 3; i++) begin
+                before_export.get(tr_bf);
+                $display("The expected rdata is");
+                tr_bf.print();
+            end
+
 			after_export.get(tr_af);
-			after_export = tr_exp.compare(tr_act);
-			if (result)
-				$display("Compare SUCCESSFULLY");
-			else
-                `uvm_warning("WARNING", "Compare FAILED")
-			$display("The expected data is");
-			tr_exp.print();
-			$display("The actual data is");
-			tr_act.print();	
+            $display("The expected wdata is");
+            tr_af.print();
 		end
 	endtask	
     /*

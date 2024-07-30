@@ -51,6 +51,21 @@ interface VPU_IF
 
 endinterface
 
+// For UVM-Testbench
+interface VPU_RESET_IF(input logic clk);
+    logic        reset_n;
+
+    clocking mst @(posedge clk);
+        output reset_n;
+    endclocking
+
+    clocking mon @(posedge clk);
+        input reset_n;
+    endclocking
+
+    modport dut(input reset_n);
+endinterface: VPU_RESET_IF
+
 // VPU-Internal Interface
 interface REQ_IF
 (
