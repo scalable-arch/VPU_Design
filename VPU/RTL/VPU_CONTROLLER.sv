@@ -9,16 +9,21 @@ module VPU_CONTROLLER
     input   wire                            rst_n,
 
     REQ_IF.dst                              req_if,
-    //input   wire                            req_valid_i,
     
-    input   wire    [SRAM_R_PORT_CNT-1:0]   opget_done_i,
-    output  wire                            req_queue_rden_o,
-    //output  wire    [SRAM_R_PORT_CNT-1:0]   opget_reset_cmd_o,
+    // OPGET SubState
+    output  wire                            opget_start_o,
+    input   wire                            opget_done_i,
+    
     output  wire                            operand_queue_rden_o[SRAM_R_PORT_CNT-1:0],
 
+    // Execution SubState
+    output  wire                            exec_start_o,
+    input   wire                            exec_done_i,
+
+    // WB SubState
+    output  wire                            wb_start_o,
     input   wire                            wb_done_i,
 
-    output  wire                            reset_cmd_o,
 );
     import VPU_PKG::*;
 
@@ -30,9 +35,12 @@ module VPU_CONTROLLER
 
     logic   [2:0]                           state,  state_n;
 
-    logic                                   reset_cmd;
-    logic                                   req_queue_rden;
+    logic                                   ready;
+    logic                                   opget_start;
+    logic                                   exec_start;
+    logic                                   wb_start;
     logic                                   operand_queue_rden;
+
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             state                           <= S_IDLE;
@@ -43,55 +51,64 @@ module VPU_CONTROLLER
     
     always_comb begin
         state_n                             = state;
-    
-        reset_cmd                           = 1'b0;
+
+        ready                               = 1'b0;
+        opget_start                         = 1'b0;
+        exec_start                          = 1'b0;
+        wb_start                            = 1'b0;
         operand_queue_rden                  = 1'b0;
-        req_queue_rden                      = 1'b0;
 
         case(state)
             S_IDLE: begin
-                if(req_if.valid) begin
+                ready                       = 1'b1;
+                if(req_if.valid && ready) begin
+                    opget_start             = 1'b1;
                     state_n                 = S_GETOP;
                 end                            
             end
 
             S_GETOP: begin
-                if(&opget_done_i) begin
+                if(opget_done_i) begin
+                    exec_start              = 1'b1;
                     state_n                 = S_EXEC_1;
                 end
             end
 
             S_EXEC_1: begin
-                if(/*vexec_done_i*/) begin
-                    state_n                 = S_EXEC_2;
+                if(exec_done_i) begin
                     operand_queue_rden      = 1'b1;
+                    exec_start              = 1'b1;
+                    state_n                 = S_EXEC_2;
                 end
             end
 
             S_EXEC_2: begin
-                if(/*vexec_done_i*/) begin
-                    state_n                 = S_WB;
+                if(exec_done_i) begin
                     operand_queue_rden      = 1'b1;
+                    wb_start                = 1'b1;
+                    state_n                 = S_WB;
                 end
             end
 
             S_WB: begin
                 if(wb_done_i) begin
+                    // response..?          = 1'b1;
                     state_n                 = S_IDLE;
-                    reset_cmd               = 1'b1;
-                    req_queue_rden          = 1'b1;
                 end
             end
         endcase
     end
-    assign  reset_cmd_o                     = reset_cmd;
-    assign  req_queue_rden_o                = req_queue_rden;
 
+    assign  req_if.ready                    = ready;
+    assign  opget_start_o                   = opget_start;
+    assign  exec_start_o                    = exec_start;
+    assign  wb_start_o                      = wb_start;
+    
     genvar k;
     generate
-        for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : PACKING_OPGET_DONE
-            assign operand_queue_rden_o[k]  = (req_queue_rden & req_if.rvalid[k]);
+        for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : PACKING_OPERAND_QUEUE_RDEN
+            assign operand_queue_rden_o[k]  = (operand_queue_rden & req_if.rvalid[k]);
         end
     endgenerate
-    
+
 endmodule

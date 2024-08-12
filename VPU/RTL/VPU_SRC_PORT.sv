@@ -12,25 +12,22 @@ module VPU_SRC_PORT
     REQ_IF.dst                                      req_if,
 
     // From/To VPU_CONTROLLER
-    input   wire                                    reset_cmd_i,
-    output  logic                                   done_o[SRAM_R_PORT_CNT],
-    input   wire                                    rden_i[SRAM_R_PORT_CNT],
+    input   wire                                    start_i,
+    output  logic                                   done_o,
+    input   wire    [SRAM_R_PORT_CNT-1:0]           operand_fifo_rden_i,
+    //To VLANE
+    output  logic   [OPERAND_WIDTH*VLANE_CNT-1:0]   operand_fifo_rdata_o[SRAM_R_PORT_CNT],
 
     //SRAM_IF
-    VPU_SRC_PORT_IF.host                            vpu_src_port_if,
-
-    //To VLANE
-    output  logic   [OPERAND_WIDTH*VLANE_CNT-1:0]   rdata_o[SRAM_R_PORT_CNT],
-    output  logic                                   rdempty_o[SRAM_R_PORT_CNT],
-    output  logic                                   rdfull_o[SRAM_R_PORT_CNT]
+    VPU_SRC_PORT_IF.host                            vpu_src_port_if
 );
     import VPU_PKG::*;
 
-    logic   [SRAM_DATA_WIDTH-1:0]                   wdata[SRAM_R_PORT_CNT];
-    logic                                           wren[SRAM_R_PORT_CNT];
-    logic                                           wrempty[SRAM_R_PORT_CNT];
-    logic                                           wrfull[SRAM_R_PORT_CNT];
+    logic   [SRAM_R_PORT_CNT-1:0]                   done;
 
+    logic   [SRAM_DATA_WIDTH-1:0]                   operand_fifo_wdata[SRAM_R_PORT_CNT];
+    logic                                           operand_fifo_wren[SRAM_R_PORT_CNT];
+    
     //instance array of interface
     SRAM_R_PORT_IF                                  sram_r_port_if[SRAM_R_PORT_CNT]();
 
@@ -48,13 +45,11 @@ module VPU_SRC_PORT
                 .valid_i                            (req_if.valid_i),
                 .ready_o                            (req_if.ready_o),
 
-                .reset_cmd_i                        (reset_cmd_i),
-                .done_o                             (done_o[j]),
+                .start_i                            (start_i),
+                .done_o                             (done[j]),
 
-                .wdata_o                            (wdata[j]),
-                .wren_o                             (wren[j]),
-                .wrempty_i                          (wrempty[j]),
-                .wrfull_i                           (wrfull[j]),
+                .operand_fifo_wdata_o               (operand_fifo_wdata[j]),
+                .operand_fifo_wren_o                (operand_fifo_wren[j]),
 
                 .sram_rd_if                         (sram_r_port_if[j]),
             );
@@ -68,20 +63,21 @@ module VPU_SRC_PORT
                 .rst_n                              (rst_n),
 
                 .wrclk                              (clk),
-                .wren_i                             (wren[j]),
-                .wdata_i                            (wdata[j]),
-                .wrempty_o                          (wrempty[j]),
-                .wrfull_o                           (wrfull[j]),
+                .wren_i                             (operand_fifo_wren[j]),
+                .wdata_i                            (operand_fifo_wdata[j]),
+                .wrempty_o                          (),
+                .wrfull_o                           (),
                 
                 .rdclk                              (clk),
-                .rden_i                             (rden_i[j]),
-                .rdata_o                            (rdata_o[j]),
-                .rdempty_o                          (rdempty_o[j]),
-                .rdfull_o                           (rdfull_o[j])
+                .rden_i                             (operand_fifo_rden_i[j]),
+                .rdata_o                            (operand_fifo_rdata_o[j]),
+                .rdempty_o                          (),
+                .rdfull_o                           ()
             );
         end
     endgenerate
 
+    
     genvar k;
     generate
         for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : ASSIGN_VPU_SRC_PORT_IF
@@ -96,7 +92,6 @@ module VPU_SRC_PORT
             assign  sram_r_port_if[k].rvalid        = vpu_src_port_if.rvalid[k];
         end
     endgenerate
-
-
+    assign  done_o                                  = (!start_i) & (&done);
 
 endmodule

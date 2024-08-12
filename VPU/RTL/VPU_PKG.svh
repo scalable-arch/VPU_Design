@@ -35,6 +35,7 @@ package VPU_PKG;
 
     /* VPU Instruction Config */
     localparam  INSTR_WIDTH                 = 136;
+    localparam  INSTR_NUM                   = 34;
     localparam  OPCODE_WIDTH                = 8;
     localparam  OPERAND_WIDTH               = ELEM_WIDTH;
     localparam  OPERAND_ADDR_WIDTH          = 32;
@@ -46,12 +47,12 @@ package VPU_PKG;
     localparam  MAX_DELAY                   = 8;
     localparam  MAX_DELAY_LG2               = $clog2(MAX_DELAY);
 
-    /*
-    * Cache Address Mapping
-        -----------------------------------------
-        |      TAG      | BANK_ID | DIM_OFFSET |
-        -----------------------------------------
-    */
+    //-----------------------------------------------------
+    // Cache Address Mapping
+    //    -----------------------------------------
+    //    |      TAG      | BANK_ID | DIM_OFFSET |
+    //    -----------------------------------------
+    //-----------------------------------------------------
     function automatic [SRAM_BANK_CNT_LG2-1:0]
                                         get_bank_id(input [OPERAND_ADDR_WIDTH-1:0] addr);
         //get_bank_id                        = {SRAM_BANK_CNT_LG2{1'b0}};  // 0 padding
@@ -72,25 +73,55 @@ package VPU_PKG;
 
     // Opcode
     typedef enum logic [7:0] { 
-        VPU_H2D_REQ_OPCODE_IADD             = 8'h01, 
-        VPU_H2D_REQ_OPCODE_ISUB             = 8'h02, 
-        VPU_H2D_REQ_OPCODE_IMUL             = 8'h03,
-        VPU_H2D_REQ_OPCODE_IDIV             = 8'h04,
-        VPU_H2D_REQ_OPCODE_ITF              = 8'h05, // Integer to Float
-        VPU_H2D_REQ_OPCODE_IMAX             = 8'h06, 
+        // Unsigned Int
+        VPU_H2D_REQ_OPCODE_UIADD            = 8'h01, 
+        VPU_H2D_REQ_OPCODE_UISUB            = 8'h02, 
+        VPU_H2D_REQ_OPCODE_UIMUL            = 8'h03,
+        VPU_H2D_REQ_OPCODE_UIDIV            = 8'h04,
+        VPU_H2D_REQ_OPCODE_UIADD3           = 8'h05,
+        VPU_H2D_REQ_OPCODE_UISUM            = 8'h06,
+        VPU_H2D_REQ_OPCODE_UIMAX            = 8'h07,
+        VPU_H2D_REQ_OPCODE_UIMAX2           = 8'h08,
+        VPU_H2D_REQ_OPCODE_UIMAX3           = 8'h09,
+        VPU_H2D_REQ_OPCODE_UIAVG2           = 8'h0A,
+        VPU_H2D_REQ_OPCODE_UIAVG3           = 8'h0B,
 
-        VPU_H2D_REQ_OPCODE_FADD             = 8'h07,
-        VPU_H2D_REQ_OPCODE_FSUB             = 8'h08,
-        VPU_H2D_REQ_OPCODE_FMUL             = 8'h09,
-        VPU_H2D_REQ_OPCODE_FDIV             = 8'h0A,
-        VPU_H2D_REQ_OPCODE_FAVG             = 8'h0B,
-        VPU_H2D_REQ_OPCODE_FSQRT            = 8'h0C,
-        VPU_H2D_REQ_OPCODE_FTI              = 8'h0D, // Float to Integer
-        VPU_H2D_REQ_OPCODE_FMAX             = 8'h0E,
-        //...
+        // Signed Int
+        VPU_H2D_REQ_OPCODE_IADD             = 8'h0C, 
+        VPU_H2D_REQ_OPCODE_ISUB             = 8'h0D, 
+        VPU_H2D_REQ_OPCODE_IMUL             = 8'h0E,
+        VPU_H2D_REQ_OPCODE_IDIV             = 8'h0F,
+        VPU_H2D_REQ_OPCODE_IADD3            = 8'h10,
+        VPU_H2D_REQ_OPCODE_ISUM             = 8'h11,
+        VPU_H2D_REQ_OPCODE_IMAX             = 8'h12,
+        VPU_H2D_REQ_OPCODE_IMAX2            = 8'h13,
+        VPU_H2D_REQ_OPCODE_IMAX3            = 8'h14,
+        VPU_H2D_REQ_OPCODE_IAVG2            = 8'h15,
+        VPU_H2D_REQ_OPCODE_IAVG3            = 8'h16,
+
+        // BF16
+        VPU_H2D_REQ_OPCODE_FADD             = 8'h17, 
+        VPU_H2D_REQ_OPCODE_FSUB             = 8'h18, 
+        VPU_H2D_REQ_OPCODE_FMUL             = 8'h19,
+        VPU_H2D_REQ_OPCODE_FDIV             = 8'h1A,
+        VPU_H2D_REQ_OPCODE_FADD3            = 8'h1B,
+        VPU_H2D_REQ_OPCODE_FSUM             = 8'h1C,
+        VPU_H2D_REQ_OPCODE_FMAX             = 8'h1D,
+        VPU_H2D_REQ_OPCODE_FMAX2            = 8'h1E,
+        VPU_H2D_REQ_OPCODE_FMAX3            = 8'h1F,
+        VPU_H2D_REQ_OPCODE_FAVG2            = 8'h20,
+        VPU_H2D_REQ_OPCODE_FAVG3            = 8'h21,
+        VPU_H2D_REQ_OPCODE_FEXP             = 8'h22,
+
+        //Convert
+        /*...*/
     } vpu_h2d_req_opcode_t;
 
 
+    typedef struct {
+        logic   [MAX_DELAY_LG2-1:0]         delay;
+        logic   [SRAM_R_PORT_CNT-1:0]       src_cnt;                          
+    } delay_and_src_cnt_t;
 
     // VPU Instruction
     typedef struct packed {
@@ -100,6 +131,37 @@ package VPU_PKG;
         logic   [31:0]                      src0;        // [63:32]
         logic   [31:0]                      dst0;        // [31:0]
     } vpu_h2d_req_instr_t; // 136-bit
+
+    typedef struct packed {
+        logic                               ui_add_r;
+        logic                               ui_sub_r;
+        logic                               ui_mul_r;
+        logic                               ui_div_r;
+        logic                               ui_max_r;
+        logic                               ui_avg_r;
+        logic                               ui_red_r;
+    } vpu_exec_ui_op_req_t; // 7bit
+
+    typedef struct packed {
+        logic                               fp_add_r;
+        logic                               fp_sub_r;
+        logic                               fp_mul_r;
+        logic                               fp_div_r;
+        logic                               fp_max_r;
+        logic                               fp_avg_r;
+        logic                               fp_red_r;
+    } vpu_exec_fp_op_req_t; // 7bit
+
+    typedef struct packed {
+        logic                               sum_r;
+        logic                               max_r;
+    } vpu_exec_red_func_t;  // 2bit
+
+    typedef struct packed {
+        vpu_exec_ui_op_req_t                ui_req;   
+        vpu_exec_fp_op_req_t                fp_req;
+        vpu_exec_red_func_t                 red_func;
+    } vpu_exec_req_t; // 16-bit
 
     function automatic [OPERAND_ADDR_WIDTH-1:0]
                                         get_src_operand(

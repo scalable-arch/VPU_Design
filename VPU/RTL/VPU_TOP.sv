@@ -8,7 +8,7 @@ module VPU_TOP
     input   wire                            rst_n,
 
     // VPU REQUEST INTERFACE
-    VPU_IF.device                           vpu_if,
+    VPU_REQ_IF.device                       vpu_req_if,
 
     // SRAM PORT INTERFACE
     VPU_SRC_PORT_IF.host                    vpu_src_port_if,
@@ -16,76 +16,88 @@ module VPU_TOP
 );
     import VPU_PKG::*;
 
-    wire                                    req_queue_rden;
-    REQ_IF                                  req_if(clk,rst_n);    
-    wire    [SRAM_R_PORT_CNT-1:0]           opget_done_pack;
-    wire                                    opget_done_unpack[SRAM_R_PORT_CNT];
-    wire                                    operand_queue_rden[SRAM_R_PORT_CNT];
-    wire                                    wb_done;
-    wire                                    reset_cmd;
+    REQ_IF                                  req_if(clk,rst_n); 
 
-    wire    [OPERAND_WIDTH*VLANE_CNT-1:0]   operand_queue_rdata[SRAM_R_PORT_CNT];
-    wire                                    operand_queue_rdempty[SRAM_R_PORT_CNT];
-    wire                                    operand_queue_rdfull[SRAM_R_PORT_CNT];
+    wire                                    opget_start;
+    wire                                    opget_done;
+    wire    [OPERAND_WIDTH*VLANE_CNT-1:0]   operand_fifo_rdata[SRAM_R_PORT_CNT];
+    wire                                    operand_fifo_rden;
+
+    wire                                    exec_start;
+    wire                                    exec_done;
     
+    wire                                    wb_start;
+    wire                                    wb_done;
+    
+    wire                                    wb_data_valid,
+    wire    [OPERAND_WIDTH*VLANE_CNT-1:0]   wb_data,
+
     VPU_DECODER #(
         //...
     ) vpu_decoder (   
         .clk                                (clk),
         .rst_n                              (rst_n),
-        .vpu_if                             (vpu_if),
-        .aempty_o                           ()
-        .empty_o                            (),
-        .rden_i                             (req_queue_rden),
+        .vpu_req_if                         (vpu_req_if),
         .req_if                             (req_if),
     );
 
     VPU_CONTROLLER #(
-
+        //...
     ) vpu_controller (   
         .clk                                (clk),
         .rst_n                              (rst_n),
         .req_if                             (req_if),
 
-        .opget_done_i                       (opget_done_pack),
-        .req_queue_rden_o                   (req_queue_rden),
-        .operand_queue_rden_o               (operand_queue_rden),
+        .opget_start_o                      (opget_start),
+        .opget_done_i                       (opget_done),
+        .operand_queue_rden_o               (operand_fifo_rden),
+
+        .exec_start_o                       (exec_start),
+        .exec_done_i                        (exec_done),
+
+        .wb_start_o                         (wb_start),
         .wb_done_i                          (wb_done),
-        .reset_cmd_o                        (reset_cmd)
+    );
+
+    VPU_EXEC_UNIT #(
+        //...
+    ) vpu_exec_unit (   
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+        .start_i                            (exec_start),
+        .op_func_i                          (req_if.op_func),
+        .delay_i                            (req_if.delay),
+        .operand_i                          (operand_fifo_rdata),
+        .operand_valid_i                    (req_if.rvalid),
+        .dout_o                             (wb_data),
+        .done_o                             (exec_done)
     );
 
     VPU_SRC_PORT #(
-
+        //...
     ) vpu_src_port (   
         .clk                                (clk),
         .rst_n                              (rst_n),
         .req_if                             (req_if),
-        .reset_cmd_i                        (reset_cmd),
-        .done_o                             (opget_done_unpack).
-        .vpu_src_port_if                    (vpu_src_port_if),
-        .rden_i                             (operand_queue_rden),
-        .rdata_o                            (operand_queue_rdata),
-        .rdempty_o                          (operand_queue_rdempty),
-        .rdfull_o                           (operand_queue_rdfull),
+        .start_i                            (opget_start),
+        .done_o                             (opget_done),
+        .operand_fifo_rden_i                (operand_fifo_rden),
+        .operand_fifo_rdata_o               (operand_fifo_rdata),
+        .vpu_src_port_if                    (vpu_src_port_if)
     );
 
-    VPU_DST_PORT #(
-    
-    ) vpu_dst_port (   
+    VPU_WB_UNIT #(
+        //...
+    ) vpu_wb_unit (   
         .clk                                (clk),
         .rst_n                              (rst_n),
-        .reset_cmd_i                        (reset_cmd),
+        .start_i                            (wb_start),
         .done_o                             (wb_done),
-        .wb_data_wren_i                     (),
-        .wb_data_i                          (),
+        .wb_data_valid_i                    (wb_data_valid),
+        .wb_data_i                          (wb_data),
         .req_if                             (req_if),
         .sram_w_port_if                     (vpu_dst_port_if)
     );
 
-    genvar k;
-    generate
-        for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : PACKING_OPGET_DONE_SIGNAL
-            assign opget_done_pack[k]       = opget_done_unpack[k];
-        end
-    endgenerate
+    assign  wb_data_valid                   = exec_done;
 endmodule
