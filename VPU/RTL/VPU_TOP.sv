@@ -1,4 +1,4 @@
-`include "VPU_PKG.svh"
+`include "/home/sg05060/generic_npu/src/VPU/RTL/Header/VPU_PKG.svh"
 module VPU_TOP
 #(
 
@@ -12,7 +12,7 @@ module VPU_TOP
 
     // SRAM PORT INTERFACE
     VPU_SRC_PORT_IF.host                    vpu_src_port_if,
-    VPU_DST_PORT_IF.host                    vpu_dst_port_if,
+    VPU_DST_PORT_IF.host                    vpu_dst_port_if
 );
     import VPU_PKG::*;
 
@@ -20,8 +20,8 @@ module VPU_TOP
 
     wire                                    opget_start;
     wire                                    opget_done;
-    wire    [OPERAND_WIDTH*VLANE_CNT-1:0]   operand_fifo_rdata[SRAM_R_PORT_CNT];
-    wire                                    operand_fifo_rden;
+    wire    [DWIDTH_PER_EXEC-1:0]           operand_fifo_rdata[SRAM_R_PORT_CNT];
+    wire    [SRC_OPERAND_CNT-1:0]           operand_fifo_rden;
 
     wire                                    exec_start;
     wire                                    exec_done;
@@ -29,8 +29,8 @@ module VPU_TOP
     wire                                    wb_start;
     wire                                    wb_done;
     
-    wire                                    wb_data_valid,
-    wire    [OPERAND_WIDTH*VLANE_CNT-1:0]   wb_data,
+    wire                                    wb_data_valid;
+    wire    [OPERAND_WIDTH*VLANE_CNT-1:0]   wb_data;
 
     VPU_DECODER #(
         //...
@@ -38,7 +38,7 @@ module VPU_TOP
         .clk                                (clk),
         .rst_n                              (rst_n),
         .vpu_req_if                         (vpu_req_if),
-        .req_if                             (req_if),
+        .req_if                             (req_if)
     );
 
     VPU_CONTROLLER #(
@@ -55,8 +55,9 @@ module VPU_TOP
         .exec_start_o                       (exec_start),
         .exec_done_i                        (exec_done),
 
+        .wb_data_valid_o                    (wb_data_valid),
         .wb_start_o                         (wb_start),
-        .wb_done_i                          (wb_done),
+        .wb_done_i                          (wb_done)
     );
 
     VPU_EXEC_UNIT #(
@@ -96,8 +97,7 @@ module VPU_TOP
         .wb_data_valid_i                    (wb_data_valid),
         .wb_data_i                          (wb_data),
         .req_if                             (req_if),
-        .sram_w_port_if                     (vpu_dst_port_if)
+        .vpu_dst_port_if                    (vpu_dst_port_if)
     );
 
-    assign  wb_data_valid                   = exec_done;
 endmodule

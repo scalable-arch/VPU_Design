@@ -1,4 +1,4 @@
-`include "VPU_PKG.svh"
+`include "/home/sg05060/generic_npu/src/VPU/RTL/Header/VPU_PKG.svh"
 
 module VPU_SRC_PORT_CONTROLLER
 #(
@@ -10,20 +10,28 @@ module VPU_SRC_PORT_CONTROLLER
 
     //From REQ_IF.src                            
     input   wire                            rvalid_i,
-    input   wire [OPERAND_ADDR_WIDTH-1:0]   raddr_i,
+    input   wire [VPU_PKG::OPERAND_ADDR_WIDTH-1:0]   raddr_i,
     input   wire                            valid_i,
-    output  logic                           ready_o,
 
     // From/To VPU_CONTROLLER
     input   wire                            start_i,
     output  logic                           done_o,
 
     // From/To OPERAND_QUEUE
-    output  logic   [SRAM_DATA_WIDTH-1:0]   operand_fifo_wdata_o,
+    output  logic   [VPU_PKG::SRAM_DATA_WIDTH-1:0]   operand_fifo_wdata_o,
     output  logic                           operand_fifo_wren_o,
 
     // From/To SRAM_INCT
     SRAM_R_PORT_IF.host                     sram_rd_if
+
+    //output                                  req_o,
+    //input                                   ack,
+    //output   [SRAM_BANK_CNT_LG2-1:0]        rid,
+    //output   [SRAM_BANK_DEPTH_LG2-1:0]      addr,
+    //output                                  reb,
+    //output                                  rlast,
+    //input   [SRAM_DATA_WIDTH-1:0]           rdata,
+    //input                                   rvalid
 );
     import VPU_PKG::*;
 

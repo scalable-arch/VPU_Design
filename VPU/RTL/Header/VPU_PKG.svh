@@ -11,28 +11,6 @@ package VPU_PKG;
     localparam  ELEM_WIDTH                  = 16; // BF16
     localparam  ELEM_PER_DIM_CNT            = (DIM_SIZE/ELEM_WIDTH);
 
-    /* SRAM Config */
-    localparam  SRAM_BANK_CNT               = 4;
-    localparam  SRAM_BANK_CNT_LG2           = $clog2(SRAM_BANK_CNT);
-    localparam  SRAM_BANK_DEPTH             = 1024;
-    localparam  SRAM_BANK_DEPTH_LG2         = $clog2(SRAM_BANK_DEPTH);
-    localparam  SRAM_BANK_SIZE              = SRAM_BANK_DEPTH * SRAM_DATA_WIDTH;
-    localparam  SRAM_BANK_SIZE_LG2          = $clog2(SRAM_BANK_SIZE);
-    localparam  SRAM_SIZE                   = SRAM_BANK_CNT * SRAM_BANK_SIZE;
-    localparam  SRAM_SIZE_LG2               = $clog2(SRAM_SIZE);
-    localparam  SRAM_DATA_WIDTH             = 512;
-    localparam  SRAM_DATA_WIDTH_LG2         = $clog2(SRAM_DATA_WIDTH);
-
-    /* VPU Component Config */
-    localparam  SRAM_R_PORT_CNT             = SRC_OPERAND_CNT;
-    localparam  SRAM_W_PORT_CNT             = DST_OPERAND_CNT;
-    localparam  REQ_FIFO_DEPTH              = 16;
-    localparam  REQ_FIFO_DEPTH_LG2          = $clog2(REQ_FIFO_DEPTH);
-    localparam  VLANE_CNT                   = 16;
-    localparam  EXEC_CNT                    = ELEM_PER_DIM_CNT/VLANE_CNT;
-    localparam  EXEC_CNT_LG2                = $clog2(EXEC_CNT);
-    localparam  OPERAND_QUEUE_DEPTH         = 2;
-
     /* VPU Instruction Config */
     localparam  INSTR_WIDTH                 = 136;
     localparam  INSTR_NUM                   = 34;
@@ -47,6 +25,30 @@ package VPU_PKG;
     localparam  MAX_DELAY                   = 8;
     localparam  MAX_DELAY_LG2               = $clog2(MAX_DELAY);
 
+    /* SRAM Config */
+    localparam  SRAM_BANK_CNT               = 4;
+    localparam  SRAM_BANK_CNT_LG2           = $clog2(SRAM_BANK_CNT);
+    localparam  SRAM_BANK_DEPTH             = 1024;
+    localparam  SRAM_BANK_DEPTH_LG2         = $clog2(SRAM_BANK_DEPTH);
+    localparam  SRAM_DATA_WIDTH             = 512;
+    localparam  SRAM_DATA_WIDTH_LG2         = $clog2(SRAM_DATA_WIDTH);
+    localparam  SRAM_BANK_SIZE              = SRAM_BANK_DEPTH * SRAM_DATA_WIDTH;
+    localparam  SRAM_BANK_SIZE_LG2          = $clog2(SRAM_BANK_SIZE);
+    localparam  SRAM_SIZE                   = SRAM_BANK_CNT * SRAM_BANK_SIZE;
+    localparam  SRAM_SIZE_LG2               = $clog2(SRAM_SIZE);
+
+    /* VPU Component Config */
+    localparam  SRAM_R_PORT_CNT             = SRC_OPERAND_CNT;
+    localparam  SRAM_W_PORT_CNT             = DST_OPERAND_CNT;
+    localparam  REQ_FIFO_DEPTH              = 16;
+    localparam  REQ_FIFO_DEPTH_LG2          = $clog2(REQ_FIFO_DEPTH);
+    localparam  VLANE_CNT                   = 16;
+    localparam  EXEC_CNT                    = ELEM_PER_DIM_CNT/VLANE_CNT;
+    localparam  EXEC_CNT_LG2                = $clog2(EXEC_CNT);
+    localparam  OPERAND_QUEUE_DEPTH         = 2;
+    localparam  DECODE_CYCLE                = 2;
+    localparam  DWIDTH_PER_EXEC             = VLANE_CNT * OPERAND_WIDTH;
+
     //-----------------------------------------------------
     // Cache Address Mapping
     //    -----------------------------------------
@@ -56,19 +58,19 @@ package VPU_PKG;
     function automatic [SRAM_BANK_CNT_LG2-1:0]
                                         get_bank_id(input [OPERAND_ADDR_WIDTH-1:0] addr);
         //get_bank_id                        = {SRAM_BANK_CNT_LG2{1'b0}};  // 0 padding
-        get_bank_id                         = raddr[SRAM_BANK_CNT_LG2+SRAM_DATA_WIDTH_LG2-1:SRAM_DATA_WIDTH_LG2];
+        get_bank_id                         = addr[SRAM_BANK_CNT_LG2+SRAM_DATA_WIDTH_LG2-1:SRAM_DATA_WIDTH_LG2];
     endfunction
 
     function automatic [SRAM_BANK_DEPTH_LG2-1:0]
                                         get_raddr(input [OPERAND_ADDR_WIDTH-1:0] addr);
         //get_raddr                          = {SRAM_BANK_DEPTH_LG2{1'b0}};  // 0 padding
-        get_raddr                           = raddr[SRAM_SIZE_LG2-1:(SRAM_BANK_CNT_LG2+SRAM_DATA_WIDTH_LG2)];
+        get_raddr                           = addr[SRAM_SIZE_LG2-1:(SRAM_BANK_CNT_LG2+SRAM_DATA_WIDTH_LG2)];
     endfunction
 
     function automatic [SRAM_BANK_DEPTH_LG2-1:0]
                                         get_waddr(input [OPERAND_ADDR_WIDTH-1:0] addr);
         //get_raddr                          = {SRAM_BANK_DEPTH_LG2{1'b0}};  // 0 padding
-        get_waddr                           = raddr[SRAM_SIZE_LG2-1:(SRAM_BANK_CNT_LG2+SRAM_DATA_WIDTH_LG2)];
+        get_waddr                           = addr[SRAM_SIZE_LG2-1:(SRAM_BANK_CNT_LG2+SRAM_DATA_WIDTH_LG2)];
     endfunction
 
     // Opcode
@@ -111,7 +113,7 @@ package VPU_PKG;
         VPU_H2D_REQ_OPCODE_FMAX3            = 8'h1F,
         VPU_H2D_REQ_OPCODE_FAVG2            = 8'h20,
         VPU_H2D_REQ_OPCODE_FAVG3            = 8'h21,
-        VPU_H2D_REQ_OPCODE_FEXP             = 8'h22,
+        VPU_H2D_REQ_OPCODE_FEXP             = 8'h22
 
         //Convert
         /*...*/
@@ -143,6 +145,16 @@ package VPU_PKG;
     } vpu_exec_ui_op_req_t; // 7bit
 
     typedef struct packed {
+        logic                               si_add_r;
+        logic                               si_sub_r;
+        logic                               si_mul_r;
+        logic                               si_div_r;
+        logic                               si_max_r;
+        logic                               si_avg_r;
+        logic                               si_red_r;
+    } vpu_exec_si_op_req_t; // 7bit
+
+    typedef struct packed {
         logic                               fp_add_r;
         logic                               fp_sub_r;
         logic                               fp_mul_r;
@@ -150,23 +162,35 @@ package VPU_PKG;
         logic                               fp_max_r;
         logic                               fp_avg_r;
         logic                               fp_red_r;
-    } vpu_exec_fp_op_req_t; // 7bit
+    } vpu_exec_fp_op_req_t;
 
     typedef struct packed {
-        logic                               sum_r;
-        logic                               max_r;
-    } vpu_exec_red_func_t;  // 2bit
+        logic                               ui_sum_r;
+        logic                               ui_max_r;
+        logic                               si_sum_r;
+        logic                               si_max_r;
+        logic                               fp_sum_r;
+        logic                               fp_max_r;
+        logic   [MAX_DELAY_LG2-1:0]         sub_delay;
+    } vpu_exec_red_op_req_t;
+
+    typedef enum logic {
+        EXEC,
+        RED
+    } vpu_exec_op_type_t;
 
     typedef struct packed {
         vpu_exec_ui_op_req_t                ui_req;   
+        vpu_exec_si_op_req_t                si_req;
         vpu_exec_fp_op_req_t                fp_req;
-        vpu_exec_red_func_t                 red_func;
+        vpu_exec_red_op_req_t               red_req;
+        vpu_exec_op_type_t                  op_type;
     } vpu_exec_req_t; // 16-bit
 
     function automatic [OPERAND_ADDR_WIDTH-1:0]
                                         get_src_operand(
                                         input vpu_h2d_req_instr_t instr,
-                                        input int i,
+                                        input int i
                                         );
         //get_src_operand                     = {SRAM_BANK_DEPTH_LG2{1'b0}};  // 0 padding
         get_src_operand                     = instr[(i+1)*(OPERAND_ADDR_WIDTH)+:OPERAND_ADDR_WIDTH];

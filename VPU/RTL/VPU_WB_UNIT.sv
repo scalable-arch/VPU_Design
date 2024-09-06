@@ -1,3 +1,4 @@
+`include "/home/sg05060/generic_npu/src/VPU/RTL/Header/VPU_PKG.svh"
 module VPU_WB_UNIT
 #(
 
@@ -12,13 +13,12 @@ module VPU_WB_UNIT
 
     // From VPU_LANE
     input   wire                            wb_data_valid_i,
-    input   [OPERAND_WIDTH*VLANE_CNT-1:0]   wb_data_i,
-
+    input   wire [VPU_PKG::DWIDTH_PER_EXEC-1:0] wb_data_i,
     // REQ_IF
     REQ_IF.dst                              req_if,
 
     // SRAM_W_PORT
-    SRAM_W_PORT_IF.host                     sram_w_port_if,
+    VPU_DST_PORT_IF.host                    vpu_dst_port_if
 );
     import VPU_PKG::*;
 
@@ -38,9 +38,10 @@ module VPU_WB_UNIT
     logic                                   wlast,      wlast_n;
 
     logic   [EXEC_CNT_LG2-1:0]              cnt,        cnt_n;
-    logic   [OPERAND_WIDTH*VLANE_CNT-1:0]   wb_data [EXEC_CNT];
-
+    logic   [DWIDTH_PER_EXEC-1:0]   wb_data [EXEC_CNT];
     
+    wire    [SRAM_DATA_WIDTH-1:0]           wdata;
+
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             state                           <= S_IDLE;
@@ -51,7 +52,7 @@ module VPU_WB_UNIT
             wlast                           <= 1'b0;
             cnt                             <= 1'b0;
             for(int i = 0; i < EXEC_CNT; i++) begin
-                wb_data[i]                  <= {(OPERAND_WIDTH*VLANE_CNT){1'b0}};
+                wb_data[i]                  <= {(DWIDTH_PER_EXEC){1'b0}};
             end
         end else begin
             state                           <= state_n;
@@ -62,7 +63,13 @@ module VPU_WB_UNIT
             wlast                           <= wlast_n;
             cnt                             <= cnt_n;
             if(wb_data_valid_i) begin
-                wb_data[cnt]                <= wb_data_i;
+                if(req_if.op_func.op_type==EXEC) begin
+                    wb_data[cnt]            <= wb_data_i;
+                end else begin
+                    for(int i = 0; i < EXEC_CNT; i++) begin
+                        wb_data[i]          <= wb_data_i;
+                    end
+                end
             end
         end
     end
@@ -98,7 +105,7 @@ module VPU_WB_UNIT
             end
             
             S_VALID: begin
-                if(sram_w_port_if.ack && sram_w_port_if.req) begin
+                if(vpu_dst_port_if.ack && vpu_dst_port_if.req) begin
                     req_n                   = 1'b0;
                     wid_n                   = {SRAM_BANK_CNT_LG2{1'b0}};
                     addr_n                  = {SRAM_BANK_DEPTH_LG2{1'b0}};
@@ -111,13 +118,19 @@ module VPU_WB_UNIT
     end
 
     
-    assign  sram_w_port_if.req              = req;
-    assign  sram_w_port_if.wid              = wid;
-    assign  sram_w_port_if.addr             = addr;
-    assign  sram_w_port_if.web              = web;
-    assign  sram_w_port_if.wlast            = wlast;
-    assign  sram_w_port_if.wdata            = wb_data;
+    assign  vpu_dst_port_if.req             = req;
+    assign  vpu_dst_port_if.wid             = wid;
+    assign  vpu_dst_port_if.addr            = addr;
+    assign  vpu_dst_port_if.web             = web;
+    assign  vpu_dst_port_if.wlast           = wlast;
+    assign  vpu_dst_port_if.wdata           = wdata;
 
+    genvar j;
+    generate
+        for(j = 0; j < EXEC_CNT; j++) begin : ASSIGN_WB_DATA
+            assign wdata[j*DWIDTH_PER_EXEC+:DWIDTH_PER_EXEC] = wb_data[j];
+        end
+    endgenerate
     assign  done_o                          = done;
 
 endmodule

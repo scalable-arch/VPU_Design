@@ -1,4 +1,4 @@
-`include "VPU_PKG.svh"
+`include "/home/sg05060/generic_npu/src/VPU/RTL/Header/VPU_PKG.svh"
 
 module VPU_CONTROLLER
 #(
@@ -14,15 +14,16 @@ module VPU_CONTROLLER
     output  wire                            opget_start_o,
     input   wire                            opget_done_i,
     
-    output  wire                            operand_queue_rden_o[SRAM_R_PORT_CNT-1:0],
+    output  wire    [VPU_PKG::SRC_OPERAND_CNT-1:0]   operand_queue_rden_o,
 
     // Execution SubState
     output  wire                            exec_start_o,
     input   wire                            exec_done_i,
 
     // WB SubState
+    output  wire                            wb_data_valid_o,
     output  wire                            wb_start_o,
-    input   wire                            wb_done_i,
+    input   wire                            wb_done_i
 
 );
     import VPU_PKG::*;
@@ -39,6 +40,7 @@ module VPU_CONTROLLER
     logic                                   opget_start;
     logic                                   exec_start;
     logic                                   wb_start;
+    logic                                   wb_data_valid;
     logic                                   operand_queue_rden;
 
     always_ff @(posedge clk) begin
@@ -56,6 +58,7 @@ module VPU_CONTROLLER
         opget_start                         = 1'b0;
         exec_start                          = 1'b0;
         wb_start                            = 1'b0;
+        wb_data_valid                       = 1'b0;
         operand_queue_rden                  = 1'b0;
 
         case(state)
@@ -76,6 +79,9 @@ module VPU_CONTROLLER
 
             S_EXEC_1: begin
                 if(exec_done_i) begin
+                    if(req_if.op_func.op_type == EXEC) begin
+                        wb_data_valid       = 1'b1;
+                    end
                     operand_queue_rden      = 1'b1;
                     exec_start              = 1'b1;
                     state_n                 = S_EXEC_2;
@@ -84,6 +90,7 @@ module VPU_CONTROLLER
 
             S_EXEC_2: begin
                 if(exec_done_i) begin
+                    wb_data_valid           = 1'b1;
                     operand_queue_rden      = 1'b1;
                     wb_start                = 1'b1;
                     state_n                 = S_WB;
@@ -103,7 +110,7 @@ module VPU_CONTROLLER
     assign  opget_start_o                   = opget_start;
     assign  exec_start_o                    = exec_start;
     assign  wb_start_o                      = wb_start;
-    
+    assign  wb_data_valid_o                 = wb_data_valid;
     genvar k;
     generate
         for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : PACKING_OPERAND_QUEUE_RDEN
