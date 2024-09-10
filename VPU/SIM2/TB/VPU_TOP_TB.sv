@@ -120,7 +120,7 @@ module VPU_TOP_TB ();
         for(i = 0; i < `ITER; i++) begin
             //Generate Opcode
             //gen_opcode = possible_opcode[$urandom_range(0, 6)];
-            gen_opcode = 17;
+            gen_opcode = 5;
             $write("%3dth opcode : %d\n", i, gen_opcode); 
             opcode_queue.push_back(gen_opcode);
 

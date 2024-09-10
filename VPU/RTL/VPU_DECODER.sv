@@ -1,4 +1,4 @@
-`include "/home/sg05060/generic_npu/src/VPU/RTL/Header/VPU_PKG.svh"
+`include "/home/sg05060/VPU_Design/VPU/RTL/Header/VPU_PKG.svh"
 
 module VPU_DECODER
 #(
@@ -25,32 +25,6 @@ module VPU_DECODER
     // Operation-Delay Table
     const logic [MAX_DELAY_LG2-1:0] opcode_delay [INSTR_NUM+1] = '{
         'h0, // None(opcode==0)
-
-        // Unsigned Int
-        'h2,    //ADD
-        'h2,    //SUB
-        'h2,    //MUL
-        'h2,    //DIV
-        'h2,    //ADD3
-        'h2,    //SUM
-        'h2,    //MAX
-        'h2,    //MAX2
-        'h2,    //MAX3
-        'h2,    //AVG2
-        'h2,    //AVG3
-
-        // Signed Int
-        'h2,    //ADD
-        'h2,    //SUB
-        'h2,    //MUL
-        'h2,    //DIV
-        'h2,    //ADD3
-        'h2,    //SUM
-        'h2,    //MAX
-        'h2,    //MAX2
-        'h2,    //MAX3
-        'h2,    //AVG2
-        'h2,    //AVG3  
 
         // FP
         'h2,    //ADD
@@ -93,21 +67,11 @@ module VPU_DECODER
             delay_n                             = opcode_delay[vpu_req_if.h2d_req_instr.opcode];
             // Decoding Source Operand Count
             case(vpu_req_if.h2d_req_instr.opcode)
-                VPU_H2D_REQ_OPCODE_UISUM,
-                VPU_H2D_REQ_OPCODE_UIMAX,
-                VPU_H2D_REQ_OPCODE_ISUM,
-                VPU_H2D_REQ_OPCODE_IMAX,
                 VPU_H2D_REQ_OPCODE_FSUM,
                 VPU_H2D_REQ_OPCODE_FMAX, 
                 VPU_H2D_REQ_OPCODE_FEXP: begin
                     rvalid_n                    = 3'b001; 
                 end
-                VPU_H2D_REQ_OPCODE_UIADD3,
-                VPU_H2D_REQ_OPCODE_UIMAX3,
-                VPU_H2D_REQ_OPCODE_UIAVG3,
-                VPU_H2D_REQ_OPCODE_IADD3,
-                VPU_H2D_REQ_OPCODE_IMAX3,
-                VPU_H2D_REQ_OPCODE_IAVG3,
                 VPU_H2D_REQ_OPCODE_FADD3,
                 VPU_H2D_REQ_OPCODE_FMAX3,
                 VPU_H2D_REQ_OPCODE_FAVG3: begin
@@ -120,76 +84,6 @@ module VPU_DECODER
 
             // Decoding Operation
             case(vpu_req_if.h2d_req_instr.opcode)
-                //-----------------------------
-                // UI Operation
-                //-----------------------------
-                VPU_H2D_REQ_OPCODE_UIADD,
-                VPU_H2D_REQ_OPCODE_UIADD3 : begin
-                    op_func_n.ui_req.ui_add_r   = 1'b1;
-                end
-                VPU_H2D_REQ_OPCODE_UISUB : begin
-                    op_func_n.ui_req.ui_sub_r   = 1'b1;
-                end
-                VPU_H2D_REQ_OPCODE_UIMUL : begin
-                    op_func_n.ui_req.ui_mul_r   = 1'b1;    
-                end
-                VPU_H2D_REQ_OPCODE_UIDIV : begin
-                    op_func_n.ui_req.ui_div_r   = 1'b1;
-                end
-                VPU_H2D_REQ_OPCODE_UISUM : begin
-                    op_func_n.red_req.ui_sum_r  = 1'b1;
-                    op_func_n.red_req.sub_delay = 'd2;
-                    op_func_n.op_type           = RED;
-                end
-                VPU_H2D_REQ_OPCODE_UIMAX : begin
-                    op_func_n.red_req.ui_max_r  = 1'b1;
-                    op_func_n.red_req.sub_delay = 'd1;
-                    op_func_n.op_type           = RED;
-                end
-                VPU_H2D_REQ_OPCODE_UIMAX2,
-                VPU_H2D_REQ_OPCODE_UIMAX3 : begin
-                    op_func_n.ui_req.ui_max_r   = 1'b1;
-                end
-                VPU_H2D_REQ_OPCODE_UIAVG2,
-                VPU_H2D_REQ_OPCODE_UIAVG3 : begin
-                    op_func_n.ui_req.ui_avg_r   = 1'b1;
-                end
-
-                //-----------------------------
-                // SI Operation
-                //-----------------------------
-                VPU_H2D_REQ_OPCODE_IADD,
-                VPU_H2D_REQ_OPCODE_IADD3 : begin
-                    op_func_n.si_req.si_add_r   = 1'b1;
-                end
-                VPU_H2D_REQ_OPCODE_ISUB : begin
-                    op_func_n.si_req.si_sub_r   = 1'b1;
-                end
-                VPU_H2D_REQ_OPCODE_IMUL : begin
-                    op_func_n.si_req.si_mul_r   = 1'b1;    
-                end
-                VPU_H2D_REQ_OPCODE_IDIV : begin
-                    op_func_n.si_req.si_div_r   = 1'b1;
-                end
-                VPU_H2D_REQ_OPCODE_ISUM : begin
-                    op_func_n.red_req.si_sum_r  = 1'b1;
-                    op_func_n.red_req.sub_delay = 'd2;
-                    op_func_n.op_type           = RED;
-                end
-                VPU_H2D_REQ_OPCODE_IMAX : begin
-                    op_func_n.red_req.si_max_r  = 1'b1;
-                    op_func_n.red_req.sub_delay = 'd1;
-                    op_func_n.op_type           = RED;
-                end
-                VPU_H2D_REQ_OPCODE_IMAX2,
-                VPU_H2D_REQ_OPCODE_IMAX3 : begin
-                    op_func_n.si_req.si_max_r   = 1'b1;
-                end
-                VPU_H2D_REQ_OPCODE_IAVG2,
-                VPU_H2D_REQ_OPCODE_IAVG3 : begin
-                    op_func_n.si_req.si_avg_r   = 1'b1;
-                end
-
                 //-----------------------------
                 // FP Operation
                 //-----------------------------

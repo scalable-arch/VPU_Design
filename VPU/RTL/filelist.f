@@ -12,17 +12,6 @@
 -sverilog $ROOT_PATH/RTL/VPU_CNTR.sv
 -sverilog $ROOT_PATH/RTL/VPU_WB_UNIT.sv
 -sverilog $ROOT_PATH/RTL/VPU_TOP.sv
--sverilog $ROOT_PATH/RTL/ALU/Unsigned_Int/VPU_ALU_UI_ADD_SUB.sv
--sverilog $ROOT_PATH/RTL/ALU/Unsigned_Int/VPU_ALU_UI_DIV.sv
--sverilog $ROOT_PATH/RTL/ALU/Unsigned_Int/VPU_ALU_UI_MUL.sv
--sverilog $ROOT_PATH/RTL/ALU/Unsigned_Int/VPU_ALU_UI_MAX.sv
--sverilog $ROOT_PATH/RTL/ALU/Unsigned_Int/VPU_ALU_UI_AVG.sv
-
--sverilog $ROOT_PATH/RTL/ALU/Signed_Int/VPU_ALU_SI_ADD_SUB.sv
--sverilog $ROOT_PATH/RTL/ALU/Signed_Int/VPU_ALU_SI_DIV.sv
--sverilog $ROOT_PATH/RTL/ALU/Signed_Int/VPU_ALU_SI_MUL.sv
--sverilog $ROOT_PATH/RTL/ALU/Signed_Int/VPU_ALU_SI_MAX.sv
--sverilog $ROOT_PATH/RTL/ALU/Signed_Int/VPU_ALU_SI_AVG.sv
 
 -sverilog $ROOT_PATH/RTL/ALU/Float/VPU_FP_ADD_SUB.sv
 -sverilog $ROOT_PATH/RTL/ALU/Float/FP_ADD_SUB.sv

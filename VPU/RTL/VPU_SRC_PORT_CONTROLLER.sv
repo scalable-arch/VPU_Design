@@ -1,4 +1,4 @@
-`include "/home/sg05060/generic_npu/src/VPU/RTL/Header/VPU_PKG.svh"
+`include "/home/sg05060/VPU_Design/VPU/RTL/Header/VPU_PKG.svh"
 
 module VPU_SRC_PORT_CONTROLLER
 #(

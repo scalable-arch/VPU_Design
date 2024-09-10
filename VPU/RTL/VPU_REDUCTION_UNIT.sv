@@ -1,4 +1,4 @@
-`include "/home/sg05060/generic_npu/src/VPU/RTL/Header/VPU_PKG.svh"
+`include "/home/sg05060/VPU_Design/VPU/RTL/Header/VPU_PKG.svh"
 
 module VPU_REDUCTION_UNIT
 #(
@@ -21,18 +21,10 @@ module VPU_REDUCTION_UNIT
     localparam  ELEM_CNT_PER_EXEC                   = ELEM_PER_DIM_CNT / EXEC_CNT;
     localparam  HEIGHT                              = $clog2(ELEM_CNT_PER_EXEC);
     
-    wire    [OPERAND_WIDTH-1:0]                     ui_sum_itmd_res[ELEM_CNT_PER_EXEC-1];
-    wire    [OPERAND_WIDTH-1:0]                     ui_max_itmd_res[ELEM_CNT_PER_EXEC-1];
-    wire    [OPERAND_WIDTH-1:0]                     si_sum_itmd_res[ELEM_CNT_PER_EXEC-1];
-    wire    [OPERAND_WIDTH-1:0]                     si_max_itmd_res[ELEM_CNT_PER_EXEC-1];
     wire    [OPERAND_WIDTH-1:0]                     fp_sum_itmd_res[ELEM_CNT_PER_EXEC-1];
     wire    [OPERAND_WIDTH-1:0]                     fp_max_itmd_res[ELEM_CNT_PER_EXEC-1];
     logic   [OPERAND_WIDTH-1:0]                     itmd_dout;
 
-    wire    [OPERAND_WIDTH-1:0]                     ui_sum_res;
-    wire    [OPERAND_WIDTH-1:0]                     ui_max_res;
-    wire    [OPERAND_WIDTH-1:0]                     si_sum_res;
-    wire    [OPERAND_WIDTH-1:0]                     si_max_res;
     wire    [OPERAND_WIDTH-1:0]                     fp_sum_res;
     wire    [OPERAND_WIDTH-1:0]                     fp_max_res;
 
@@ -89,68 +81,6 @@ module VPU_REDUCTION_UNIT
             if(j==0) begin // First-Level Reduction
                 for(i = 0; i < ELEM_CNT_PER_EXEC / 2; i = i + 1) begin
                     //----------------------------------------------
-                    // UI_SUM
-                    //----------------------------------------------
-                    VPU_ALU_UI_ADD_SUB # (
-                    ) ui_add_sub (
-                        //.clk                        (clk),
-                        //.rst_n                      (rst_n),
-                        .op_0                       (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
-                        .op_1                       (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .sub_n                      (1'b1),
-                        .en                         ((op_func_i.red_req.ui_sum_r)),
-                        .result_o                   (ui_sum_itmd_res[i])
-                    );
-
-                    //----------------------------------------------
-                    // UI_MAX
-                    //----------------------------------------------
-                    VPU_ALU_UI_MAX # (
-                    ) ui_max (
-                        //.clk                        (clk),
-                        //.rst_n                      (rst_n),
-                        .op_0                       (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
-                        .op_1                       (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .en                         ((op_func_i.red_req.ui_max_r)),
-                        .result_o                   (ui_max_itmd_res[i])
-                    );
-
-                    //----------------------------------------------
-                    // SI_SUM
-                    //----------------------------------------------
-                    VPU_ALU_SI_ADD_SUB # (
-                    ) si_add_sub (
-                        //.clk                        (clk),
-                        //.rst_n                      (rst_n),
-                        .op_0                       (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
-                        .op_1                       (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .sub_n                      (1'b1),
-                        .en                         ((op_func_i.red_req.si_sum_r)),
-                        .result_o                   (si_sum_itmd_res[i])
-                    );
-
-                    //----------------------------------------------
-                    // SI_MAX
-                    //----------------------------------------------
-                    VPU_ALU_SI_MAX # (
-                    ) si_max (
-                        //.clk                        (clk),
-                        //.rst_n                      (rst_n),
-                        .op_0                       (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
-                        .op_1                       (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .en                         ((op_func_i.red_req.si_max_r)),
-                        .result_o                   (si_max_itmd_res[i])
-                    );
-
-                    //----------------------------------------------
                     // FP_SUM
                     //----------------------------------------------
                     VPU_FP_ADD_SUB # (
@@ -184,68 +114,6 @@ module VPU_REDUCTION_UNIT
             end
             else begin
                 for(i = 0; i < ELEM_CNT_PER_EXEC / (1<<(j+1)); i = i + 1) begin
-                    //----------------------------------------------
-                    // UI_SUM
-                    //----------------------------------------------
-                    VPU_ALU_UI_ADD_SUB # (
-                    ) ui_add_sub (
-                        //.clk                        (clk),
-                        //.rst_n                      (rst_n),
-                        .op_0                       (ui_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+0]),
-                        .op_1                       (ui_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+1]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .sub_n                      (1'b1),
-                        .en                         (1'b1),
-                        .result_o                   (ui_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j))+i])
-                    );
-
-                    //----------------------------------------------
-                    // UI_MAX
-                    //----------------------------------------------
-                    VPU_ALU_UI_MAX # (
-                    ) ui_max (
-                        //.clk                        (clk),
-                        //.rst_n                      (rst_n),
-                        .op_0                       (ui_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+0]),
-                        .op_1                       (ui_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+1]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .en                         (1'b1),
-                        .result_o                   (ui_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j))+i])
-                    );
-
-                    //----------------------------------------------
-                    // SI_SUM
-                    //----------------------------------------------
-                    VPU_ALU_SI_ADD_SUB # (
-                    ) si_add_sub (
-                        //.clk                        (clk),
-                        //.rst_n                      (rst_n),
-                        .op_0                       (si_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+0]),
-                        .op_1                       (si_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+1]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .sub_n                      (1'b1),
-                        .en                         (1'b1),
-                        .result_o                   (si_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j))+i])
-                    );
-
-                    //----------------------------------------------
-                    // SI_MAX
-                    //----------------------------------------------
-                    VPU_ALU_SI_MAX # (
-                    ) si_max (
-                        //.clk                        (clk),
-                        //.rst_n                      (rst_n),
-                        .op_0                       (si_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+0]),
-                        .op_1                       (si_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+1]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .en                         (1'b1),
-                        .result_o                   (si_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j))+i])
-                    );
-
                     //----------------------------------------------
                     // FP_SUM
                     //----------------------------------------------
@@ -284,56 +152,6 @@ module VPU_REDUCTION_UNIT
     //----------------------------------------------
     // Leaf Level Reduction
     //----------------------------------------------
-    VPU_ALU_UI_ADD_SUB # (
-    ) ll_ui_add_sub (
-        //.clk                                        (clk),
-        //.rst_n                                      (rst_n),
-        .op_0                                       (buff),
-        .op_1                                       (itmd_dout),
-        .op_2                                       (),
-        .op_valid                                   (3'b011),
-        .sub_n                                      (1'b1),
-        .en                                         ((op_func_i.red_req.ui_sum_r)),
-        .result_o                                   (ui_sum_res)
-    );
-
-    VPU_ALU_UI_MAX # (
-    ) ll_ui_max (
-        //.clk                                        (clk),
-        //.rst_n                                      (rst_n),
-        .op_0                                       (buff),
-        .op_1                                       (itmd_dout),
-        .op_2                                       (),
-        .op_valid                                   (3'b011),
-        .en                                         (op_func_i.red_req.ui_max_r),
-        .result_o                                   (ui_max_res)
-    );
-
-    VPU_ALU_SI_ADD_SUB # (
-    ) ll_si_add_sub (
-        //.clk                                        (clk),
-        //.rst_n                                      (rst_n),
-        .op_0                                       (buff),
-        .op_1                                       (itmd_dout),
-        .op_2                                       (),
-        .op_valid                                   (3'b011),
-        .sub_n                                      (1'b1),
-        .en                                         ((op_func_i.red_req.si_sum_r)),
-        .result_o                                   (si_sum_res)
-    );
-
-    VPU_ALU_SI_MAX # (
-    ) ll_si_max (
-        //.clk                                        (clk),
-        //.rst_n                                      (rst_n),
-        .op_0                                       (buff),
-        .op_1                                       (itmd_dout),
-        .op_2                                       (),
-        .op_valid                                   (3'b011),
-        .en                                         (op_func_i.red_req.si_max_r),
-        .result_o                                   (si_max_res)
-    );
-
     VPU_FP_ADD_SUB # (
     ) ll_fp_add_sub (
         //.clk                                        (clk),
@@ -361,23 +179,7 @@ module VPU_REDUCTION_UNIT
 
 
     always_comb begin
-        if(op_func_i.red_req.ui_sum_r) begin
-            itmd_dout                               = ui_sum_itmd_res[ELEM_CNT_PER_EXEC-2];
-            dout                                    = ui_sum_res;
-        end
-        else if(op_func_i.red_req.ui_max_r) begin
-            itmd_dout                               = ui_max_itmd_res[ELEM_CNT_PER_EXEC-2];
-            dout                                    = ui_max_res;
-        end
-        else if(op_func_i.red_req.si_sum_r) begin
-            itmd_dout                               = si_sum_itmd_res[ELEM_CNT_PER_EXEC-2];
-            dout                                    = si_sum_res;
-        end
-        else if(op_func_i.red_req.si_max_r) begin
-            itmd_dout                               = si_max_itmd_res[ELEM_CNT_PER_EXEC-2];
-            dout                                    = si_max_res;
-        end
-        else if(op_func_i.red_req.fp_sum_r) begin
+        if(op_func_i.red_req.fp_sum_r) begin
             itmd_dout                               = fp_sum_itmd_res[ELEM_CNT_PER_EXEC-2];
             dout                                    = fp_sum_res;
         end

@@ -13,7 +13,7 @@ package VPU_PKG;
 
     /* VPU Instruction Config */
     localparam  INSTR_WIDTH                 = 136;
-    localparam  INSTR_NUM                   = 34;
+    localparam  INSTR_NUM                   = 12;
     localparam  OPCODE_WIDTH                = 8;
     localparam  OPERAND_WIDTH               = ELEM_WIDTH;
     localparam  OPERAND_ADDR_WIDTH          = 32;
@@ -75,45 +75,19 @@ package VPU_PKG;
 
     // Opcode
     typedef enum logic [7:0] { 
-        // Unsigned Int
-        VPU_H2D_REQ_OPCODE_UIADD            = 8'h01, 
-        VPU_H2D_REQ_OPCODE_UISUB            = 8'h02, 
-        VPU_H2D_REQ_OPCODE_UIMUL            = 8'h03,
-        VPU_H2D_REQ_OPCODE_UIDIV            = 8'h04,
-        VPU_H2D_REQ_OPCODE_UIADD3           = 8'h05,
-        VPU_H2D_REQ_OPCODE_UISUM            = 8'h06,
-        VPU_H2D_REQ_OPCODE_UIMAX            = 8'h07,
-        VPU_H2D_REQ_OPCODE_UIMAX2           = 8'h08,
-        VPU_H2D_REQ_OPCODE_UIMAX3           = 8'h09,
-        VPU_H2D_REQ_OPCODE_UIAVG2           = 8'h0A,
-        VPU_H2D_REQ_OPCODE_UIAVG3           = 8'h0B,
-
-        // Signed Int
-        VPU_H2D_REQ_OPCODE_IADD             = 8'h0C, 
-        VPU_H2D_REQ_OPCODE_ISUB             = 8'h0D, 
-        VPU_H2D_REQ_OPCODE_IMUL             = 8'h0E,
-        VPU_H2D_REQ_OPCODE_IDIV             = 8'h0F,
-        VPU_H2D_REQ_OPCODE_IADD3            = 8'h10,
-        VPU_H2D_REQ_OPCODE_ISUM             = 8'h11,
-        VPU_H2D_REQ_OPCODE_IMAX             = 8'h12,
-        VPU_H2D_REQ_OPCODE_IMAX2            = 8'h13,
-        VPU_H2D_REQ_OPCODE_IMAX3            = 8'h14,
-        VPU_H2D_REQ_OPCODE_IAVG2            = 8'h15,
-        VPU_H2D_REQ_OPCODE_IAVG3            = 8'h16,
-
         // BF16
-        VPU_H2D_REQ_OPCODE_FADD             = 8'h17, 
-        VPU_H2D_REQ_OPCODE_FSUB             = 8'h18, 
-        VPU_H2D_REQ_OPCODE_FMUL             = 8'h19,
-        VPU_H2D_REQ_OPCODE_FDIV             = 8'h1A,
-        VPU_H2D_REQ_OPCODE_FADD3            = 8'h1B,
-        VPU_H2D_REQ_OPCODE_FSUM             = 8'h1C,
-        VPU_H2D_REQ_OPCODE_FMAX             = 8'h1D,
-        VPU_H2D_REQ_OPCODE_FMAX2            = 8'h1E,
-        VPU_H2D_REQ_OPCODE_FMAX3            = 8'h1F,
-        VPU_H2D_REQ_OPCODE_FAVG2            = 8'h20,
-        VPU_H2D_REQ_OPCODE_FAVG3            = 8'h21,
-        VPU_H2D_REQ_OPCODE_FEXP             = 8'h22
+        VPU_H2D_REQ_OPCODE_FADD             = 8'h01, 
+        VPU_H2D_REQ_OPCODE_FSUB             = 8'h02, 
+        VPU_H2D_REQ_OPCODE_FMUL             = 8'h03,
+        VPU_H2D_REQ_OPCODE_FDIV             = 8'h04,
+        VPU_H2D_REQ_OPCODE_FADD3            = 8'h05,
+        VPU_H2D_REQ_OPCODE_FSUM             = 8'h06,
+        VPU_H2D_REQ_OPCODE_FMAX             = 8'h07,
+        VPU_H2D_REQ_OPCODE_FMAX2            = 8'h08,
+        VPU_H2D_REQ_OPCODE_FMAX3            = 8'h09,
+        VPU_H2D_REQ_OPCODE_FAVG2            = 8'h0A,
+        VPU_H2D_REQ_OPCODE_FAVG3            = 8'h0B,
+        VPU_H2D_REQ_OPCODE_FEXP             = 8'h0C
 
         //Convert
         /*...*/
@@ -135,26 +109,6 @@ package VPU_PKG;
     } vpu_h2d_req_instr_t; // 136-bit
 
     typedef struct packed {
-        logic                               ui_add_r;
-        logic                               ui_sub_r;
-        logic                               ui_mul_r;
-        logic                               ui_div_r;
-        logic                               ui_max_r;
-        logic                               ui_avg_r;
-        logic                               ui_red_r;
-    } vpu_exec_ui_op_req_t; // 7bit
-
-    typedef struct packed {
-        logic                               si_add_r;
-        logic                               si_sub_r;
-        logic                               si_mul_r;
-        logic                               si_div_r;
-        logic                               si_max_r;
-        logic                               si_avg_r;
-        logic                               si_red_r;
-    } vpu_exec_si_op_req_t; // 7bit
-
-    typedef struct packed {
         logic                               fp_add_r;
         logic                               fp_sub_r;
         logic                               fp_mul_r;
@@ -165,10 +119,6 @@ package VPU_PKG;
     } vpu_exec_fp_op_req_t;
 
     typedef struct packed {
-        logic                               ui_sum_r;
-        logic                               ui_max_r;
-        logic                               si_sum_r;
-        logic                               si_max_r;
         logic                               fp_sum_r;
         logic                               fp_max_r;
         logic   [MAX_DELAY_LG2-1:0]         sub_delay;
@@ -180,8 +130,6 @@ package VPU_PKG;
     } vpu_exec_op_type_t;
 
     typedef struct packed {
-        vpu_exec_ui_op_req_t                ui_req;   
-        vpu_exec_si_op_req_t                si_req;
         vpu_exec_fp_op_req_t                fp_req;
         vpu_exec_red_op_req_t               red_req;
         vpu_exec_op_type_t                  op_type;

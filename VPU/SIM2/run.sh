@@ -26,7 +26,7 @@ elif [[ $1 == "compile" ]]; then
     mkdir -p $RUN_DIR
     cd $RUN_DIR
     echo "Compiling"
-    $COMPILE_CMD $COMPILE_OPTIONS +incdir+/home/sg05060/generic_npu/src/VPU/RTL/Header -f $FILELIST_TB -f $FILELIST_RTL
+    $COMPILE_CMD $COMPILE_OPTIONS +incdir+/home/sg05060/VPU_Design/VPU/RTL/Header -f $FILELIST_TB -f $FILELIST_RTL
 elif [[ $1 == "tb" ]]; then
     if [ -e $RUN_DIR/simv ]; then
         cd $RUN_DIR
