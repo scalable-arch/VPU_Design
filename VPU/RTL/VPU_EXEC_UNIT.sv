@@ -24,10 +24,10 @@ module VPU_EXEC_UNIT
 
     wire    [DWIDTH_PER_EXEC-1:0]                       exec_dout;
     wire    [DWIDTH_PER_EXEC-1:0]                       red_dout;
-    logic   [DWIDTH_PER_EXEC-1:0]                       dout;
+    logic   [DWIDTH_PER_EXEC-1:0]                       dout, dout_n;
     wire                                                exec_done;   
     wire                                                red_done;
-    logic                                               done;
+    logic                                               done, done_n;
 
     logic   [EXEC_CNT_LG2-1:0]                          cnt, cnt_n; 
 
@@ -35,14 +35,15 @@ module VPU_EXEC_UNIT
     //----------------------------------------------
     // VPU_EXEC_DELAY
     //----------------------------------------------
-    VPU_TIMING_CNTR #(
-        .CNTR_WIDTH                                     (MAX_DELAY_LG2)
-    ) VPU_TIMING_CNTR (
-        .clk                                            (clk),
-        .rst_n                                          (rst_n),
-        .reset_cmd_i                                    (start_i),
-        .reset_value_i                                  (delay_i),
-        .is_zero_o                                      (exec_done)
+    
+    VPU_CNTR # (
+        .MAX_DELAY_LG2                          (MAX_DELAY_LG2)
+    ) VPU_CNTR (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .count                                  (delay_i),
+        .start_i                                (start_i),
+        .done_o                                 (exec_done)
     );
 
     //----------------------------------------------
@@ -87,15 +88,25 @@ module VPU_EXEC_UNIT
         .done_o                                         (red_done)
     );
 
-    always_comb begin
-        dout                                            = {DWIDTH_PER_EXEC{1'b0}};
-        done                                            = 1'b0;
-        if(op_func_i.op_type==EXEC) begin
-            dout                                        = exec_dout;
-            done                                        = exec_done;
+    always_ff @(posedge clk) begin
+        if(!rst_n) begin
+            dout                                        <= {DWIDTH_PER_EXEC{1'b0}};
+            done                                        <= 1'b0;
         end else begin
-            dout                                        = red_dout;
-            done                                        = red_done;
+            dout                                        <= dout_n;
+            done                                        <= done_n;
+        end
+    end
+
+    always_comb begin
+        dout_n                                            = {DWIDTH_PER_EXEC{1'b0}};
+        done_n                                            = 1'b0;
+        if(op_func_i.op_type==EXEC) begin
+            dout_n                                        = exec_dout;
+            done_n                                        = exec_done;
+        end else begin
+            dout_n                                        = red_dout;
+            done_n                                        = red_done;
         end
     end
     assign  dout_o                                      = dout;

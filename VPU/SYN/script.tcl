@@ -19,8 +19,7 @@ analyze -format sverilog $env(LAB_PATH)/RTL/VPU_LANE.sv
 analyze -format sverilog $env(LAB_PATH)/RTL/VPU_REDUCTION_UNIT.sv
 analyze -format sverilog $env(LAB_PATH)/RTL/VPU_SRC_PORT_CONTROLLER.sv
 analyze -format sverilog $env(LAB_PATH)/RTL/VPU_SRC_PORT.sv
-analyze -format sverilog $env(LAB_PATH)/RTL/VPU_TIMING_CNTR.sv
-analyze -format sverilog $env(LAB_PATH)/RTL/VPU_INCR_CNTR.sv
+analyze -format sverilog $env(LAB_PATH)/RTL/VPU_CNTR.sv
 analyze -format sverilog $env(LAB_PATH)/RTL/VPU_WB_UNIT.sv
 analyze -format sverilog $env(LAB_PATH)/RTL/VPU_TOP.sv
 analyze -format sverilog $env(LAB_PATH)/RTL/VPU_TOP_WRAPPER.sv

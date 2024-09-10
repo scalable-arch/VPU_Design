@@ -73,14 +73,14 @@ module VPU_REDUCTION_UNIT
         end
     end
 
-    VPU_TIMING_CNTR #(
-        .CNTR_WIDTH                                 (MAX_DELAY_LG2)
-    ) VPU_TIMING_CNTR (
-        .clk                                        (clk),
-        .rst_n                                      (rst_n),
-        .reset_cmd_i                                (start_i),
-        .reset_value_i                              (delay),
-        .is_zero_o                                  (done)
+    VPU_CNTR # (
+        .MAX_DELAY_LG2                          (MAX_DELAY_LG2)
+    ) VPU_CNTR (
+        .clk                                    (clk),
+        .rst_n                                  (rst_n),
+        .count                                  (delay),
+        .start_i                                (start_i),
+        .done_o                                 (done)
     );
 
     genvar j,i;

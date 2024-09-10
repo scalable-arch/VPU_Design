@@ -19,7 +19,9 @@ module VPU_SRC_PORT
     output  logic   [VPU_PKG::DWIDTH_PER_EXEC-1:0]  operand_fifo_rdata_o[VPU_PKG::SRAM_R_PORT_CNT],
 
     //SRAM_IF
-    VPU_SRC_PORT_IF.host                            vpu_src_port_if
+    VPU_SRC_PORT_IF.host                            vpu_src0_port_if,
+    VPU_SRC_PORT_IF.host                            vpu_src1_port_if,
+    VPU_SRC_PORT_IF.host                            vpu_src2_port_if
 );
     import VPU_PKG::*;
 
@@ -30,7 +32,7 @@ module VPU_SRC_PORT
 
     logic   [SRAM_DATA_WIDTH-1:0]                   operand_fifo_rdata[SRAM_R_PORT_CNT];
     //instance array of interface
-    SRAM_R_PORT_IF                                  sram_r_port_if[SRAM_R_PORT_CNT]();
+    //SRAM_R_PORT_IF                                  sram_r_port_if[SRAM_R_PORT_CNT]();
 
     // Operand Buffers
     logic   [SRAM_DATA_WIDTH-1:0]                   operand_buff[SRAM_R_PORT_CNT];
@@ -65,6 +67,64 @@ module VPU_SRC_PORT
         end
     end
 
+    VPU_SRC_PORT_CONTROLLER #(
+        //...
+    ) vpu_src0_port_ctrl (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+
+        .rvalid_i                           (req_if.rvalid[0]),
+        .raddr_i                            (req_if.raddr[0]),
+        .valid_i                            (req_if.valid),
+
+        .start_i                            (start_i),
+        .done_o                             (done[0]),
+
+        .operand_fifo_wdata_o               (operand_fifo_wdata[0]),
+        .operand_fifo_wren_o                (operand_fifo_wren[0]),
+
+        .sram_rd_if                         (vpu_src0_port_if)
+    );
+
+    VPU_SRC_PORT_CONTROLLER #(
+        //...
+    ) vpu_src1_port_ctrl (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+
+        .rvalid_i                           (req_if.rvalid[1]),
+        .raddr_i                            (req_if.raddr[1]),
+        .valid_i                            (req_if.valid),
+
+        .start_i                            (start_i),
+        .done_o                             (done[1]),
+
+        .operand_fifo_wdata_o               (operand_fifo_wdata[1]),
+        .operand_fifo_wren_o                (operand_fifo_wren[1]),
+
+        .sram_rd_if                         (vpu_src1_port_if)
+    );
+
+    VPU_SRC_PORT_CONTROLLER #(
+        //...
+    ) vpu_src2_port_ctrl (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+
+        .rvalid_i                           (req_if.rvalid[2]),
+        .raddr_i                            (req_if.raddr[2]),
+        .valid_i                            (req_if.valid),
+
+        .start_i                            (start_i),
+        .done_o                             (done[2]),
+
+        .operand_fifo_wdata_o               (operand_fifo_wdata[2]),
+        .operand_fifo_wren_o                (operand_fifo_wren[2]),
+
+        .sram_rd_if                         (vpu_src2_port_if)
+    );
+
+    /*
     genvar k;
     generate
         for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : ASSIGN_VPU_SRC_PORT_IF
@@ -103,15 +163,8 @@ module VPU_SRC_PORT
             );
         end
     endgenerate
-
-    /*
-    genvar l;
-    generate
-        for(l=0; l < SRAM_R_PORT_CNT; l=l+1) begin
-            assign operand_fifo_rdata_o[l]          = operand_buff[l][(cnt*DWIDTH_PER_EXEC)+:DWIDTH_PER_EXEC];
-        end
-    endgenerate
     */
+    
     genvar l;
     generate
         for(l=0; l < SRAM_R_PORT_CNT; l=l+1) begin

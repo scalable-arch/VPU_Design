@@ -18,7 +18,7 @@ module VPU_WB_UNIT
     REQ_IF.dst                              req_if,
 
     // SRAM_W_PORT
-    VPU_DST_PORT_IF.host                    vpu_dst_port_if
+    VPU_DST_PORT_IF.host                    vpu_dst0_port_if
 );
     import VPU_PKG::*;
 
@@ -105,7 +105,7 @@ module VPU_WB_UNIT
             end
             
             S_VALID: begin
-                if(vpu_dst_port_if.ack && vpu_dst_port_if.req) begin
+                if(vpu_dst0_port_if.ack && vpu_dst0_port_if.req) begin
                     req_n                   = 1'b0;
                     wid_n                   = {SRAM_BANK_CNT_LG2{1'b0}};
                     addr_n                  = {SRAM_BANK_DEPTH_LG2{1'b0}};
@@ -118,12 +118,12 @@ module VPU_WB_UNIT
     end
 
     
-    assign  vpu_dst_port_if.req             = req;
-    assign  vpu_dst_port_if.wid             = wid;
-    assign  vpu_dst_port_if.addr            = addr;
-    assign  vpu_dst_port_if.web             = web;
-    assign  vpu_dst_port_if.wlast           = wlast;
-    assign  vpu_dst_port_if.wdata           = wdata;
+    assign  vpu_dst0_port_if.req            = req;
+    assign  vpu_dst0_port_if.wid            = wid;
+    assign  vpu_dst0_port_if.addr           = addr;
+    assign  vpu_dst0_port_if.web            = web;
+    assign  vpu_dst0_port_if.wlast          = wlast;
+    assign  vpu_dst0_port_if.wdata          = wdata;
 
     genvar j;
     generate

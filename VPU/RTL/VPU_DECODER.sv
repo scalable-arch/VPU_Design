@@ -237,15 +237,16 @@ module VPU_DECODER
     // Decode Cycle
     //---------------------------------------
     wire                                        done;
-    VPU_INCR_CNTR # (
-        .MAX_COUNT                              (DECODE_CYCLE)
-    ) VPU_INCR_CNTR (
+    VPU_CNTR # (
+        .MAX_DELAY_LG2                          (MAX_DELAY_LG2)
+    ) VPU_CNTR (
         .clk                                    (clk),
         .rst_n                                  (rst_n),
+        .count                                  (DECODE_CYCLE),
         .start_i                                (vpu_req_if.valid && req_if.ready),
         .done_o                                 (done)
     );
-    
+
     // REQ_IF
     assign  req_if.delay                        = delay;
     assign  req_if.rvalid                       = rvalid;

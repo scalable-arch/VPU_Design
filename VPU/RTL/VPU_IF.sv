@@ -84,14 +84,14 @@ interface VPU_SRC_PORT_IF
 );
     import VPU_PKG::*;
 
-    logic   [SRAM_R_PORT_CNT-1:0]       req;
-    logic   [SRAM_R_PORT_CNT-1:0]       ack;
-    logic   [SRAM_BANK_CNT_LG2-1:0]     rid     [SRAM_R_PORT_CNT];
-    logic   [SRAM_BANK_DEPTH_LG2-1:0]   addr    [SRAM_R_PORT_CNT];
-    logic   [SRAM_R_PORT_CNT-1:0]       reb;
-    logic   [SRAM_R_PORT_CNT-1:0]       rlast;
-    logic   [SRAM_DATA_WIDTH-1:0]       rdata   [SRAM_R_PORT_CNT];
-    logic   [SRAM_R_PORT_CNT-1:0]       rvalid;
+    logic                               req;
+    logic                               ack;
+    logic   [SRAM_BANK_CNT_LG2-1:0]     rid;
+    logic   [SRAM_BANK_DEPTH_LG2-1:0]   addr;
+    logic                               reb;
+    logic                               rlast;
+    logic   [SRAM_DATA_WIDTH-1:0]       rdata;
+    logic                               rvalid;
 
     modport host (
         output      req, rid, addr, reb, rlast,
@@ -146,73 +146,31 @@ interface VPU_SRC_PORT_IF
     // Task For Verification
     //---------------------------------
     task init();
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            ack[i]              = 1'b0;
-            rdata[i]            = {SRAM_DATA_WIDTH{1'b0}};
-            rvalid[i]           = 1'b0;
-        end
+        ack              = 1'b0;
+        rdata            = {SRAM_DATA_WIDTH{1'b0}};
+        rvalid           = 1'b0;
     endtask
 
-    task automatic sram_r_response();
-        logic  [SRAM_R_PORT_CNT-1:0] req_r;
-        while (~|req) begin
-            @(posedge clk);
-        end
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            if(req[i] == 1'b1) begin
-                req_r[i]            = 1'b1;
-                ack[i]              = 1'b1;
-            end
-        end
-        
-        repeat (5) @(posedge clk);
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            if(req_r[i] == 1'b1) begin
-                rdata[i]            = {{128'h0000_0001_0002_0003_0004_0005_0006_0007},
-                                        {128'h0008_0009_000a_000b_000c_000d_000e_000f},
-                                        {128'h0010_0011_0012_0013_0014_0015_0016_0017},
-                                        {128'h0018_0019_001a_001b_001c_001d_001e_001f}
-                                        };
-                rvalid[i]           = 1'b1;
-            end
-        end
-        @(posedge clk);
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            rvalid[i]           = 1'b0;
-            req_r[i]            = 1'b0;
-        end
-    endtask
-
-    task automatic sram_read_transaction(input bit [511:0] _rdata[3]);
-        logic  [SRAM_R_PORT_CNT-1:0] req_r;
-        while (~|req) begin
+    task automatic sram_read_transaction(input bit [511:0] _rdata);
+        while (!req) begin
             @(posedge clk);
         end
         #1;
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            if(req[i] == 1'b1) begin
-                req_r[i]            = 1'b1;
-                ack[i]              = 1'b1;
-            end
+
+        if(req == 1'b1) begin
+            ack             = 1'b1;
         end
         
         @(posedge clk);
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            ack[i]                  = 1'b0;
-        end
+            ack             = 1'b0;
         
         repeat (5) @(posedge clk);
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            if(req_r[i] == 1'b1) begin
-                rdata[i]            = _rdata[i];
-                rvalid[i]           = 1'b1;
-            end
-        end
+        rdata               = _rdata;
+        rvalid              = 1'b1;
+
         @(posedge clk);
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            rvalid[i]           = 1'b0;
-            req_r[i]            = 1'b0;
-        end
+            rvalid          = 1'b0;
+            
         @(posedge clk);
     endtask
     // synopsys translate_on
@@ -368,59 +326,3 @@ interface REQ_IF
     );
 endinterface
 
-interface SRAM_R_PORT_IF
-(
-    input   wire                        clk,
-    input   wire                        rst_n
-);
-    import VPU_PKG::*;
-
-    logic                               req;
-    logic                               ack;
-    logic   [SRAM_BANK_CNT_LG2-1:0]     rid;
-    logic   [SRAM_BANK_DEPTH_LG2-1:0]   addr;
-    logic                               reb;
-    logic                               rlast;
-    logic   [SRAM_DATA_WIDTH-1:0]       rdata;
-    logic                               rvalid;
-
-    modport host (
-        output      req, rid, addr, reb, rlast,
-        input       ack, rdata, rvalid
-    );
-
-    modport mon (
-        input       req, ack, rid, addr, reb,
-        input       rlast, rdata, rvalid
-    );
-
-endinterface
-
-/*
-interface SRAM_W_PORT_IF
-(
-    input   wire                        clk,
-    input   wire                        rst_n
-);
-    import VPU_PKG::*;
-
-    logic                               req;
-    logic                               ack;
-    logic   [SRAM_BANK_CNT_LG2-1:0]     wid;
-    logic   [SRAM_BANK_DEPTH_LG2-1:0]   addr;
-    logic                               web;
-    logic                               wlast;
-    logic   [SRAM_DATA_WIDTH-1:0]       wdata;
-
-    modport host (
-        output      req, wid, addr, web, wlast, wdata,
-        input       ack
-    );
-
-    modport mon (
-        input       req, ack, wid, addr, web,
-        input       wlast, wdata
-    );
-
-endinterface
-*/

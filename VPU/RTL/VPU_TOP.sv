@@ -11,8 +11,10 @@ module VPU_TOP
     VPU_REQ_IF.device                       vpu_req_if,
 
     // SRAM PORT INTERFACE
-    VPU_SRC_PORT_IF.host                    vpu_src_port_if,
-    VPU_DST_PORT_IF.host                    vpu_dst_port_if
+    VPU_SRC_PORT_IF.host                    vpu_src0_port_if,
+    VPU_SRC_PORT_IF.host                    vpu_src1_port_if,
+    VPU_SRC_PORT_IF.host                    vpu_src2_port_if,
+    VPU_DST_PORT_IF.host                    vpu_dst0_port_if
 );
     import VPU_PKG::*;
 
@@ -84,7 +86,9 @@ module VPU_TOP
         .done_o                             (opget_done),
         .operand_fifo_rden_i                (operand_fifo_rden),
         .operand_fifo_rdata_o               (operand_fifo_rdata),
-        .vpu_src_port_if                    (vpu_src_port_if)
+        .vpu_src0_port_if                   (vpu_src0_port_if),
+        .vpu_src1_port_if                   (vpu_src1_port_if),
+        .vpu_src2_port_if                   (vpu_src2_port_if)
     );
 
     VPU_WB_UNIT #(
@@ -97,7 +101,7 @@ module VPU_TOP
         .wb_data_valid_i                    (wb_data_valid),
         .wb_data_i                          (wb_data),
         .req_if                             (req_if),
-        .vpu_dst_port_if                    (vpu_dst_port_if)
+        .vpu_dst0_port_if                   (vpu_dst0_port_if)
     );
 
 endmodule

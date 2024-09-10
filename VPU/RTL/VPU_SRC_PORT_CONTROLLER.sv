@@ -22,7 +22,7 @@ module VPU_SRC_PORT_CONTROLLER
     output  logic                           operand_fifo_wren_o,
 
     // From/To SRAM_INCT
-    SRAM_R_PORT_IF.host                     sram_rd_if
+    VPU_SRC_PORT_IF.host                    sram_rd_if
 
     //output                                  req_o,
     //input                                   ack,

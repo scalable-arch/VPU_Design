@@ -1,7 +1,7 @@
 
-module VPU_INCR_CNTR
+module VPU_CNTR
 #(
-    parameter   MAX_COUNT           = 4
+    parameter   MAX_DELAY_LG2   = 4
 )
 (
     // clock & reset
@@ -9,6 +9,7 @@ module VPU_INCR_CNTR
     input                       rst_n,
 
     // request from the address decoder
+    input   [MAX_DELAY_LG2-1:0] count,
     input                       start_i,
     output                      done_o       
 );
@@ -17,7 +18,7 @@ module VPU_INCR_CNTR
     localparam  S_DONE              = 2'b10;
 
 
-    localparam  MAX_COUNT_LG2       = $clog2(MAX_COUNT);
+    localparam  MAX_COUNT_LG2       = $clog2(MAX_DELAY_LG2);
 
     logic   [MAX_COUNT_LG2-1:0]     cntr,       cntr_n;
     logic                           done;
@@ -43,7 +44,7 @@ module VPU_INCR_CNTR
                 end
             end
             S_RUN: begin
-                if(cntr_n == MAX_COUNT-1) begin
+                if(cntr_n == count-'d1) begin
                     cntr_n          = {MAX_COUNT_LG2{1'b0}};
                     state_n         = S_DONE;
                 end else begin

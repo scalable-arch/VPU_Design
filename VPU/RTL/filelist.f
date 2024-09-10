@@ -9,8 +9,7 @@
 -sverilog $ROOT_PATH/RTL/VPU_SRC_PORT_CONTROLLER.sv
 -sverilog $ROOT_PATH/RTL/VPU_SRC_PORT.sv
 
--sverilog $ROOT_PATH/RTL/VPU_TIMING_CNTR.sv
--sverilog $ROOT_PATH/RTL/VPU_INCR_CNTR.sv
+-sverilog $ROOT_PATH/RTL/VPU_CNTR.sv
 -sverilog $ROOT_PATH/RTL/VPU_WB_UNIT.sv
 -sverilog $ROOT_PATH/RTL/VPU_TOP.sv
 -sverilog $ROOT_PATH/RTL/ALU/Unsigned_Int/VPU_ALU_UI_ADD_SUB.sv
