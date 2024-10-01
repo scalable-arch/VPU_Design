@@ -1,0 +1,198 @@
+#-----------------------------------------------------------
+# Vivado v2024.1 (64-bit)
+# SW Build 5076996 on Wed May 22 18:36:09 MDT 2024
+# IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
+# SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
+# Start of session at: Wed Oct  2 00:07:46 2024
+# Process ID: 2158356
+# Current directory: /home/sg05060/VPU_Design/actions/sim_vivado
+# Command line: vivado -mode tcl -source /home/sg05060/VPU_Design/actions/sim_vivado/sim.tcl
+# Log file: /home/sg05060/VPU_Design/actions/sim_vivado/vivado.log
+# Journal file: /home/sg05060/VPU_Design/actions/sim_vivado/vivado.jou
+# Running On        :SALfpga
+# Platform          :Ubuntu
+# Operating System  :Ubuntu 20.04.6 LTS
+# Processor Detail  :AMD Ryzen 9 3900X 12-Core Processor
+# CPU Frequency     :2200.000 MHz
+# CPU Physical cores:12
+# CPU Logical cores :24
+# Host memory       :135006 MB
+# Swap memory       :2147 MB
+# Total Virtual     :137153 MB
+# Available Virtual :129305 MB
+#-----------------------------------------------------------
+source /home/sg05060/VPU_Design/actions/sim_vivado/sim.tcl
+# global env_map
+# proc get_filename_arr {filelists env} {
+#     global search_path
+#     global defines 
+#     set results {}
+# 
+#     foreach filelist $filelists {
+#         set fp [open $filelist r]
+#         set lines [split [read $fp] "\n"]
+#         foreach line $lines {
+#             set line2 [string map $env $line]
+#             if {[string first "+incdir" $line] != -1} {
+#                 # incdir
+#                 set words [split $line2 "+"]
+#                 set inc_path [lindex $words 2]
+#                 lappend search_path $inc_path
+#             } elseif {[string first "+define" $line] != -1} {
+#                 # define
+#                 set words [split $line2 "+"]
+#                 lappend defines [lindex $words 2]
+#             } elseif {[string first ".sv" $line2] != -1} {
+#                 # SystemVerilog
+#                 lappend results $line2
+#             } elseif {[string first ".v" $line2] != -1} {
+#                 # Verilog
+#                 lappend results $line2
+#             }  elseif {[string first ".xci" $line2] != -1} {
+#                 # Xilinx IP
+#                 lappend results $line2
+#             }
+#         }
+#     }
+#     return $results
+# }
+# create_project -force sim $env(VPU_HOME)/vivado/sim_project -part xcvh1582-vsva3697-2MP-e-S
+create_project: Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 1427.773 ; gain = 18.867 ; free physical = 20143 ; free virtual = 122932
+# set_property board_part xilinx.com:vhk158:part0:1.1 [current_project]
+# set env_map {}
+# lappend env_map "\${VPU_HOME}"         $env(VPU_HOME)
+# lappend env_map "\${VPU_SIM_HOME}"     $env(VPU_HOME)/sim
+# set design_filelists "$env(VPU_HOME)/design/filelist.f"
+# set sim_filelists "$env(VPU_HOME)/sim/filelist.f"
+# add_files -fileset sources_1 [get_filename_arr $design_filelists $env_map]
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/tools/Xilinx/Vivado/2024.1/data/ip'.
+WARNING: [IP_Flow 19-2162] IP 'floating_point_add_sub' is locked:
+* IP 'floating_point_add_sub' shares a common output directory with other IP. It is recommended that each IP be placed in its own directory. * Current project part 'xcvh1582-vsva3697-2MP-e-S' and the part 'xcu250-figd2104-2L-e' used to customize the IP 'floating_point_add_sub' do not match.
+WARNING: [IP_Flow 19-2162] IP 'floating_point_cmp' is locked:
+* IP 'floating_point_cmp' shares a common output directory with other IP. It is recommended that each IP be placed in its own directory. * Current project part 'xcvh1582-vsva3697-2MP-e-S' and the part 'xcu250-figd2104-2L-e' used to customize the IP 'floating_point_cmp' do not match.
+WARNING: [IP_Flow 19-2162] IP 'floating_point_div' is locked:
+* IP 'floating_point_div' shares a common output directory with other IP. It is recommended that each IP be placed in its own directory. * Current project part 'xcvh1582-vsva3697-2MP-e-S' and the part 'xcu250-figd2104-2L-e' used to customize the IP 'floating_point_div' do not match.
+WARNING: [IP_Flow 19-2162] IP 'floating_point_exp' is locked:
+* IP 'floating_point_exp' shares a common output directory with other IP. It is recommended that each IP be placed in its own directory. * Current project part 'xcvh1582-vsva3697-2MP-e-S' and the part 'xcu250-figd2104-2L-e' used to customize the IP 'floating_point_exp' do not match.
+WARNING: [IP_Flow 19-2162] IP 'floating_point_mul' is locked:
+* IP 'floating_point_mul' shares a common output directory with other IP. It is recommended that each IP be placed in its own directory. * Current project part 'xcvh1582-vsva3697-2MP-e-S' and the part 'xcu250-figd2104-2L-e' used to customize the IP 'floating_point_mul' do not match.
+WARNING: [IP_Flow 19-2162] IP 'floating_point_sqrt' is locked:
+* IP 'floating_point_sqrt' shares a common output directory with other IP. It is recommended that each IP be placed in its own directory. * Current project part 'xcvh1582-vsva3697-2MP-e-S' and the part 'xcu250-figd2104-2L-e' used to customize the IP 'floating_point_sqrt' do not match.
+WARNING: [Vivado 12-13650] The IP file '/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_add_sub.xci' has been moved from its original location, as a result the outputs for this IP will now be generated in '/home/project_3.gen/sources_1/ip/floating_point_add_sub'. Alternatively a copy of the IP can be imported into the project using one of the 'import_ip' or 'import_files' commands.
+WARNING: [Vivado 12-13650] The IP file '/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_cmp.xci' has been moved from its original location, as a result the outputs for this IP will now be generated in '/home/project_3.gen/sources_1/ip/floating_point_cmp'. Alternatively a copy of the IP can be imported into the project using one of the 'import_ip' or 'import_files' commands.
+WARNING: [Vivado 12-13650] The IP file '/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_div.xci' has been moved from its original location, as a result the outputs for this IP will now be generated in '/home/project_3.gen/sources_1/ip/floating_point_div'. Alternatively a copy of the IP can be imported into the project using one of the 'import_ip' or 'import_files' commands.
+WARNING: [Vivado 12-13650] The IP file '/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_exp.xci' has been moved from its original location, as a result the outputs for this IP will now be generated in '/home/project_3.gen/sources_1/ip/floating_point_exp'. Alternatively a copy of the IP can be imported into the project using one of the 'import_ip' or 'import_files' commands.
+WARNING: [Vivado 12-13650] The IP file '/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_mul.xci' has been moved from its original location, as a result the outputs for this IP will now be generated in '/home/project_3.gen/sources_1/ip/floating_point_mul'. Alternatively a copy of the IP can be imported into the project using one of the 'import_ip' or 'import_files' commands.
+WARNING: [Vivado 12-13650] The IP file '/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_sqrt.xci' has been moved from its original location, as a result the outputs for this IP will now be generated in '/home/project_3.gen/sources_1/ip/floating_point_sqrt'. Alternatively a copy of the IP can be imported into the project using one of the 'import_ip' or 'import_files' commands.
+# update_compile_order -fileset sources_1
+# add_files -fileset sim_1 [get_filename_arr $sim_filelists $env_map]
+# update_compile_order -fileset sim_1 
+# set_property SOURCE_SET sources_1 [get_filesets sim_1]
+# set_property include_dirs $search_path [get_filesets sim_1]
+# set_property top VPU_TOP_TB [get_filesets sim_1]
+# set_property -name {xsim.compile.xvlog.more_options} -value {-L uvm} -objects [get_filesets sim_1]
+# set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
+# set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
+# launch_simulation
+Command: launch_simulation 
+INFO: [Vivado 12-12493] Simulation top is 'VPU_TOP_TB'
+INFO: [Vivado 12-5698] Checking validity of IPs in the design for the 'XSim' simulator...
+WARNING: [Runs 36-337] The following IPs are either missing output products or output products are not up-to-date for Simulation target. Since these IPs are locked, no update to the output products can be done. 
+Please select 'Report IP Status' from the 'Tools/Report' menu or run Tcl command 'report_ip_status' for more information.
+/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_sqrt.xci
+/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_div.xci
+/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_add_sub.xci
+/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_cmp.xci
+/home/sg05060/VPU_Design/design/xilinx_ip/floating_point_mul.xci
+
+INFO: [Vivado 12-13303] Checking logical NoC and simulation wrapper generation status...
+INFO: [Vivado 12-5682] Launching behavioral simulation in '/home/sg05060/VPU_Design/vivado/sim_project/sim.sim/sim_1/behav/xsim'
+INFO: [Vivado 12-13660] Precompiled IP simulation library mode is enabled (default). The design IP libraries will be referenced from the compiled library path. Please note that if the precompiled version of the library is not found from the path or the IP is in locked state, then the library source files for these IPs will be compiled locally as part of the compile order.
+INFO: [Vivado 12-4795] Using compiled simulation libraries for IPs
+INFO: [SIM-utils-51] Simulation object is 'sim_1'
+INFO: [SIM-utils-72] Using boost library from '/tools/Xilinx/Vivado/2024.1/tps/boost_1_72_0'
+INFO: [USF-XSim-7] Finding pre-compiled libraries...
+INFO: [USF-XSim-11] File '/tools/Xilinx/Vivado/2024.1/data/xsim/xsim.ini' copied to run dir:'/home/sg05060/VPU_Design/vivado/sim_project/sim.sim/sim_1/behav/xsim'
+INFO: [SIM-utils-54] Inspecting design source files for 'VPU_TOP_TB' in fileset 'sim_1'...
+WARNING: [SIM-utils-52] IP component XML file does not exist: '/home/project_3.gen/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xml'
+WARNING: [SIM-utils-52] IP component XML file does not exist: '/home/project_3.gen/sources_1/ip/floating_point_cmp/floating_point_cmp.xml'
+WARNING: [SIM-utils-52] IP component XML file does not exist: '/home/project_3.gen/sources_1/ip/floating_point_div/floating_point_div.xml'
+WARNING: [SIM-utils-52] IP component XML file does not exist: '/home/project_3.gen/sources_1/ip/floating_point_exp/floating_point_exp.xml'
+WARNING: [SIM-utils-52] IP component XML file does not exist: '/home/project_3.gen/sources_1/ip/floating_point_mul/floating_point_mul.xml'
+WARNING: [SIM-utils-52] IP component XML file does not exist: '/home/project_3.gen/sources_1/ip/floating_point_sqrt/floating_point_sqrt.xml'
+INFO: [USF-XSim-97] Finding global include files...
+INFO: [USF-XSim-98] Fetching design files from 'sim_1'...
+INFO: [USF-XSim-2] XSim::Compile design
+INFO: [USF-XSim-61] Executing 'COMPILE and ANALYZE' step in '/home/sg05060/VPU_Design/vivado/sim_project/sim.sim/sim_1/behav/xsim'
+xvlog --incr --relax -L uvm -L uvm -prj VPU_TOP_TB_vlog.prj
+WARNING: [XSIM 43-3495] Using file/path ../../../../../../actions/sim_vivado/${CMSS_HOME}/design/sverilog as is as could not expand environment variables due to following error : Env Variable CMSS_HOME is not defined..
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_CNTR.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_CNTR
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_CONTROLLER.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_CONTROLLER
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_DECODER.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_DECODER
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_EXEC_UNIT.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_EXEC_UNIT
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_FP_ADD_SUB.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_FP_ADD_SUB
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_FP_AVG.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_FP_AVG
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_FP_DIV.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_FP_DIV
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_FP_MAX.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_FP_MAX
+WARNING: [VRFC 10-3380] identifier 'result_0_valid' is used before its declaration [/home/sg05060/VPU_Design/design/sverilog/VPU_FP_MAX.sv:33]
+WARNING: [VRFC 10-3380] identifier 'result_0_data' is used before its declaration [/home/sg05060/VPU_Design/design/sverilog/VPU_FP_MAX.sv:34]
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_FP_MUL.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_FP_MUL
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_FP_SQRT.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_FP_SQRT
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_IF.sv" into library xil_defaultlib
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_LANE.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_LANE
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_REDUCTION_UNIT.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_REDUCTION_UNIT
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_SRC_PORT.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_SRC_PORT
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_SRC_PORT_CONTROLLER.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_SRC_PORT_CONTROLLER
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_TOP.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_TOP
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/design/sverilog/VPU_WB_UNIT.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_WB_UNIT
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/sg05060/VPU_Design/sim/sverilog/VPU_TOP_TB.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module VPU_TOP_TB
+WARNING: [VRFC 10-2649] an enum variable may only be assigned the same enum typed variable or one of its values [/home/sg05060/VPU_Design/sim/sverilog/VPU_TOP_TB.sv:25]
+WARNING: [VRFC 10-3824] variable 'cnt' must explicitly be declared as automatic or static [/home/sg05060/VPU_Design/sim/sverilog/VPU_TOP_TB.sv:257]
+INFO: [VRFC 10-2263] Analyzing Verilog file "/home/sg05060/VPU_Design/vivado/sim_project/sim.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl
+Waiting for jobs to finish...
+No pending jobs, compilation finished.
+INFO: [USF-XSim-69] 'compile' step finished in '1' seconds
+INFO: [USF-XSim-3] XSim::Elaborate design
+INFO: [USF-XSim-61] Executing 'ELABORATE' step in '/home/sg05060/VPU_Design/vivado/sim_project/sim.sim/sim_1/behav/xsim'
+xelab --incr --debug typical --relax --mt 8 -L xil_defaultlib -L uvm -L unisims_ver -L unimacro_ver -L unisims_ver -L secureip -L xpm --snapshot VPU_TOP_TB_behav xil_defaultlib.VPU_TOP_TB xil_defaultlib.glbl -log elaborate.log -L uvm
+Vivado Simulator v2024.1
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: /tools/Xilinx/Vivado/2024.1/bin/unwrapped/lnx64.o/xelab --incr --debug typical --relax --mt 8 -L xil_defaultlib -L uvm -L unisims_ver -L unimacro_ver -L unisims_ver -L secureip -L xpm --snapshot VPU_TOP_TB_behav xil_defaultlib.VPU_TOP_TB xil_defaultlib.glbl -log elaborate.log -L uvm 
+Using 8 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+ERROR: [VRFC 10-2063] Module <floating_point_add_sub> not found while processing module instance <fp_add_sub_0> [/home/sg05060/VPU_Design/design/sverilog/VPU_FP_ADD_SUB.sv:39]
+ERROR: [VRFC 10-2063] Module <floating_point_cmp> not found while processing module instance <fp_max_0> [/home/sg05060/VPU_Design/design/sverilog/VPU_FP_MAX.sv:57]
+ERROR: [XSIM 43-3322] Static elaboration of top level Verilog design unit(s) in library work failed.
+INFO: [USF-XSim-69] 'elaborate' step finished in '1' seconds
+INFO: [USF-XSim-99] Step results log file:'/home/sg05060/VPU_Design/vivado/sim_project/sim.sim/sim_1/behav/xsim/elaborate.log'
+ERROR: [USF-XSim-62] 'elaborate' step failed with error(s). Please check the Tcl console output or '/home/sg05060/VPU_Design/vivado/sim_project/sim.sim/sim_1/behav/xsim/elaborate.log' file for more information.
+ERROR: [Vivado 12-4473] Detected error while running simulation. Please correct the issue and retry this operation.
+ERROR: [Common 17-39] 'launch_simulation' failed due to earlier errors.
+
+    while executing
+"launch_simulation"
+    (file "/home/sg05060/VPU_Design/actions/sim_vivado/sim.tcl" line 83)
+q
+INFO: [Common 17-206] Exiting Vivado at Wed Oct  2 00:08:42 2024...

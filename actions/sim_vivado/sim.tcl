@@ -27,6 +27,9 @@ proc get_filename_arr {filelists env} {
             } elseif {[string first ".v" $line2] != -1} {
                 # Verilog
                 lappend results $line2
+            }  elseif {[string first ".xci" $line2] != -1} {
+                # Xilinx IP
+                lappend results $line2
             }
         }
     }
@@ -47,11 +50,11 @@ set_property board_part xilinx.com:vhk158:part0:1.1 [current_project]
 ## Source environment variables
 set env_map {}
 lappend env_map "\${VPU_HOME}"         $env(VPU_HOME)
-#lappend env_map "\${VPU_SIM_HOME}"     $env(VPU_HOME)/sim
-lappend env_map "\${VPU_SIM_HOME}"     $env(VPU_HOME)/SIM2
+lappend env_map "\${VPU_SIM_HOME}"     $env(VPU_HOME)/sim
 
-set design_filelists "$env(VPU_HOME)/RTL/filelist.f"
-set sim_filelists "$env(VPU_HOME)/SIM2/TB/filelist.f"
+
+set design_filelists "$env(VPU_HOME)/design/filelist.f"
+set sim_filelists "$env(VPU_HOME)/sim/filelist.f"
                    
 # Add design files
 add_files -fileset sources_1 [get_filename_arr $design_filelists $env_map]
@@ -74,7 +77,6 @@ set_property -name {xsim.compile.xvlog.more_options} -value {-L uvm} -objects [g
 set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
 set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
 
-set_property -name {xsim.run.time} -value {10000ns} -objects [get_filesets sim_1]
 #set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=13 TESTVECTOR=/home/sg05060/example.txt GOLDEN_FILE=/home/sg05060/example_out.txt"} -objects [get_filesets sim_1]
 #set_property verilog_define $defines [get_filesets sim_1]
 
