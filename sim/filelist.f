@@ -1,0 +1,1 @@
+${VPU_HOME}/sim/sverilog/VPU_TOP_TB.sv

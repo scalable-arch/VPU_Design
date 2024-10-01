@@ -1,27 +1,24 @@
-//-sverilog $ROOT_PATH/RTL/Header/VPU_PKG.svh
--sverilog $ROOT_PATH/RTL/VPU_IF.sv
--sverilog $ROOT_PATH/RTL/VPU_CONTROLLER.sv
--sverilog $ROOT_PATH/RTL/VPU_DECODER.sv
--sverilog $ROOT_PATH/RTL/VPU_EXEC_UNIT.sv
--sverilog $ROOT_PATH/RTL/VPU_LANE.sv
--sverilog $ROOT_PATH/RTL/VPU_REDUCTION_UNIT.sv
++incdir+${VPU_HOME}/RTL/Header
 
--sverilog $ROOT_PATH/RTL/VPU_SRC_PORT_CONTROLLER.sv
--sverilog $ROOT_PATH/RTL/VPU_SRC_PORT.sv
+${VPU_HOME}/RTL/VPU_IF.sv
+${VPU_HOME}/RTL/VPU_CONTROLLER.sv
+${VPU_HOME}/RTL/VPU_DECODER.sv
+${VPU_HOME}/RTL/VPU_EXEC_UNIT.sv
+${VPU_HOME}/RTL/VPU_LANE.sv
+${VPU_HOME}/RTL/VPU_REDUCTION_UNIT.sv
 
--sverilog $ROOT_PATH/RTL/VPU_CNTR.sv
--sverilog $ROOT_PATH/RTL/VPU_WB_UNIT.sv
--sverilog $ROOT_PATH/RTL/VPU_TOP.sv
-
--sverilog $ROOT_PATH/RTL/ALU/Float/VPU_FP_ADD_SUB.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/FP_ADD_SUB.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/FP_MUL.sv
-//-sverilog $ROOT_PATH/RTL/ALU/Float/float_add.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/float_break.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/float_combine.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/float_lzc.sv
-//-sverilog $ROOT_PATH/RTL/ALU/Float/float_mul.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/float_swap.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/float_native_lzc.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/VPU_FP_MAX.sv
--sverilog $ROOT_PATH/RTL/ALU/Float/VPU_FP_MUL.sv
+${VPU_HOME}/RTL/VPU_SRC_PORT_CONTROLLER.sv
+${VPU_HOME}/RTL/VPU_SRC_PORT.sv
+${VPU_HOME}/RTL/VPU_CNTR.sv
+${VPU_HOME}/RTL/VPU_WB_UNIT.sv
+${VPU_HOME}/RTL/VPU_TOP.sv
+${VPU_HOME}/RTL/ALU/Float/VPU_FP_ADD_SUB.sv
+${VPU_HOME}/RTL/ALU/Float/FP_ADD_SUB.sv
+${VPU_HOME}/RTL/ALU/Float/FP_MUL.sv
+${VPU_HOME}/RTL/ALU/Float/float_break.sv
+${VPU_HOME}/RTL/ALU/Float/float_combine.sv
+${VPU_HOME}/RTL/ALU/Float/float_lzc.sv
+${VPU_HOME}/RTL/ALU/Float/float_swap.sv
+${VPU_HOME}/RTL/ALU/Float/float_native_lzc.sv
+${VPU_HOME}/RTL/ALU/Float/VPU_FP_MAX.sv
+${VPU_HOME}/RTL/ALU/Float/VPU_FP_MUL.sv

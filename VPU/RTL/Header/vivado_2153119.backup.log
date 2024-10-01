@@ -1,0 +1,80 @@
+#-----------------------------------------------------------
+# Vivado v2024.1 (64-bit)
+# SW Build 5076996 on Wed May 22 18:36:09 MDT 2024
+# IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
+# SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
+# Start of session at: Tue Oct  1 22:52:06 2024
+# Process ID: 2153119
+# Current directory: /home/sg05060/VPU_Design/VPU/RTL/Header
+# Command line: vivado -mode tcl -source /home/sg05060/VPU_Design/sim.tcl
+# Log file: /home/sg05060/VPU_Design/VPU/RTL/Header/vivado.log
+# Journal file: /home/sg05060/VPU_Design/VPU/RTL/Header/vivado.jou
+# Running On        :SALfpga
+# Platform          :Ubuntu
+# Operating System  :Ubuntu 20.04.6 LTS
+# Processor Detail  :AMD Ryzen 9 3900X 12-Core Processor
+# CPU Frequency     :2200.000 MHz
+# CPU Physical cores:12
+# CPU Logical cores :24
+# Host memory       :135006 MB
+# Swap memory       :2147 MB
+# Total Virtual     :137153 MB
+# Available Virtual :128453 MB
+#-----------------------------------------------------------
+source /home/sg05060/VPU_Design/sim.tcl
+# global env_map
+# proc get_filename_arr {filelists env} {
+#     global search_path
+#     global defines 
+#     set results {}
+# 
+#     foreach filelist $filelists {
+#         set fp [open $filelist r]
+#         set lines [split [read $fp] "\n"]
+#         foreach line $lines {
+#             set line2 [string map $env $line]
+#             if {[string first "+incdir" $line] != -1} {
+#                 # incdir
+#                 set words [split $line2 "+"]
+#                 set inc_path [lindex $words 2]
+#                 lappend search_path $inc_path
+#             } elseif {[string first "+define" $line] != -1} {
+#                 # define
+#                 set words [split $line2 "+"]
+#                 lappend defines [lindex $words 2]
+#             } elseif {[string first ".sv" $line2] != -1} {
+#                 # SystemVerilog
+#                 lappend results $line2
+#             } elseif {[string first ".v" $line2] != -1} {
+#                 # Verilog
+#                 lappend results $line2
+#             }
+#         }
+#     }
+#     return $results
+# }
+# create_project -force sim $env(VPU_HOME)/vivado/sim_project -part xcvh1582-vsva3697-2MP-e-S
+create_project: Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 1427.770 ; gain = 18.867 ; free physical = 19597 ; free virtual = 122126
+# set_property board_part xilinx.com:vhk158:part0:1.1 [current_project]
+# set env_map {}
+# lappend env_map "\${VPU_HOME}"         $env(VPU_HOME)
+# lappend env_map "\${VPU_SIM_HOME}"     $env(VPU_HOME)/SIM2
+# set design_filelists "$env(VPU_HOME)/RTL/filelist.f"
+# set sim_filelists "$env(VPU_HOME)/SIM2/TB/filelist.f"
+# add_files -fileset sources_1 [get_filename_arr $design_filelists $env_map]
+# update_compile_order -fileset sources_1
+# add_files -fileset sim_1 [get_filename_arr $sim_filelists $env_map]
+# update_compile_order -fileset sim_1 
+# set_property SOURCE_SET sources_1 [get_filesets sim_1]
+# set_property include_dirs $search_path [get_filesets sim_1]
+# set_property top VPU_TOP_TB [get_filesets sim_1]
+# set_property -name {xsim.compile.xvlog.more_options} -value {-L uvm} -objects [get_filesets sim_1]
+# set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
+# set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
+# _property -name xsim.elaborate.xelab.more_options -value {-runtime 10000} -objects sim_1
+invalid command name "_property"
+    while executing
+"_property -name {xsim.elaborate.xelab.more_options} -value {-runtime 10000} -objects [get_filesets sim_1]"
+    (file "/home/sg05060/VPU_Design/sim.tcl" line 76)
+q
+INFO: [Common 17-206] Exiting Vivado at Tue Oct  1 22:52:42 2024...
