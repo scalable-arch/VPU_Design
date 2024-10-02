@@ -47,6 +47,10 @@ set_property board_part xilinx.com:vhk158:part0:1.1 [current_project]
 ##############################################################################
 # Read designs
 ##############################################################################
+set_property target_language Verilog [current_project]
+set_property simulator_language Verilog [current_project]
+
+
 ## Source environment variables
 set env_map {}
 lappend env_map "\${VPU_HOME}"         $env(VPU_HOME)
@@ -60,6 +64,9 @@ set sim_filelists "$env(VPU_HOME)/sim/filelist.f"
 add_files -fileset sources_1 [get_filename_arr $design_filelists $env_map]
 
 update_compile_order -fileset sources_1
+
+# Gen IPs
+source $env(VPU_HOME)/design/xilinx_ip/gen_ip.tcl
 
 # Add simulation files
 add_files -fileset sim_1 [get_filename_arr $sim_filelists $env_map]
@@ -77,7 +84,9 @@ set_property -name {xsim.compile.xvlog.more_options} -value {-L uvm} -objects [g
 set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
 set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
 
-#set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=13 TESTVECTOR=/home/sg05060/example.txt GOLDEN_FILE=/home/sg05060/example_out.txt"} -objects [get_filesets sim_1]
+set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=13 TESTVECTOR=/home/sg05060/example.txt GOLDEN_FILE=/home/sg05060/example_out.txt"} -objects [get_filesets sim_1]
+set_property -name {xsim.simulate.runtime} -value {1000000ns} -objects [get_filesets sim_1]
+
 #set_property verilog_define $defines [get_filesets sim_1]
 
 launch_simulation

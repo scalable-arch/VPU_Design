@@ -1,1 +1,0 @@
-${VPU_HOME}/SIM2/TB/VPU_TOP_TB.sv

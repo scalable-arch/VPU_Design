@@ -3,10 +3,10 @@
 # SW Build 5076996 on Wed May 22 18:36:09 MDT 2024
 # IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
 # SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
-# Start of session at: Wed Oct  2 00:07:46 2024
-# Process ID: 2158356
+# Start of session at: Wed Oct  2 15:24:53 2024
+# Process ID: 2241081
 # Current directory: /home/sg05060/VPU_Design/actions/sim_vivado
-# Command line: vivado -mode tcl -source /home/sg05060/VPU_Design/actions/sim_vivado/sim.tcl
+# Command line: vivado -mode tcl -source sim.tcl
 # Log file: /home/sg05060/VPU_Design/actions/sim_vivado/vivado.log
 # Journal file: /home/sg05060/VPU_Design/actions/sim_vivado/vivado.jou
 # Running On        :SALfpga
@@ -19,7 +19,7 @@
 # Host memory       :135006 MB
 # Swap memory       :2147 MB
 # Total Virtual     :137153 MB
-# Available Virtual :129305 MB
+# Available Virtual :104128 MB
 #-----------------------------------------------------------
-source /home/sg05060/VPU_Design/actions/sim_vivado/sim.tcl
+source sim.tcl
 q
