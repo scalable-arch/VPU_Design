@@ -1,5 +1,6 @@
 +incdir+${CMSS_HOME}/design/sverilog
 ${VPU_HOME}/design/sverilog/VPU_TOP.sv
+${VPU_HOME}/design/sverilog/VPU_TOP_WRAPPER.sv
 ${VPU_HOME}/design/sverilog/VPU_SRC_PORT.sv
 ${VPU_HOME}/design/sverilog/VPU_SRC_PORT_CONTROLLER.sv
 ${VPU_HOME}/design/sverilog/VPU_REDUCTION_UNIT.sv
