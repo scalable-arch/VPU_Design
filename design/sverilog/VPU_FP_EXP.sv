@@ -1,4 +1,4 @@
-`include "/home/sg05060/project_3/project_3.srcs/sources_1/imports/Header/VPU_PKG.svh"
+`include "VPU_PKG.svh"
 
 module VPU_FP_EXP
 #(
