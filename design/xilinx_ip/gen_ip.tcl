@@ -20,10 +20,10 @@ set_property -dict [list \
   CONFIG.Maximum_Latency {false} \
   CONFIG.Result_Precision_Type {Custom} \
 ] [get_ips floating_point_add_sub]
-generate_target {instantiation template} [get_files sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
-update_compile_order -fileset sources_1
-generate_target all [get_files sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
-export_ip_user_files -of_objects [get_files sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci] -no_script -sync -force -quiet
+# generate_target {instantiation_template} [get_files /home/rhgksdma/VPU_Design/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
+# update_compile_order -fileset sources_1
+# generate_target all [get_files /home/rhgksdma/VPU_Design/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
+# export_ip_user_files -of_objects [get_files /home/rhgksdma/VPU_Design/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci] -no_script -sync -force -quiet
 # floating_point_cmp
 create_ip -name floating_point -vendor xilinx.com -library ip -version 7.1 -module_name floating_point_cmp
 set_property -dict [list \
@@ -140,3 +140,51 @@ set_property -dict [list \
   CONFIG.Operation_Type {Square_root} \
   CONFIG.Result_Precision_Type {Custom} \
 ] [get_ips floating_point_sqrt]
+
+update_compile_order -fileset sources_1
+generate_target all [get_files  $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
+catch { config_ip_cache -export [get_ips -all floating_point_add_sub] }
+export_ip_user_files -of_objects [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci] -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
+launch_runs floating_point_add_sub_synth_1 -jobs 12
+wait_on_run floating_point_add_sub_synth_1
+
+update_compile_order -fileset sources_1
+generate_target all [get_files  $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_cmp/floating_point_cmp.xci]
+catch { config_ip_cache -export [get_ips -all floating_point_cmp] }
+export_ip_user_files -of_objects [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_cmp/floating_point_cmp.xci] -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_cmp/floating_point_cmp.xci]
+launch_runs floating_point_cmp_synth_1 -jobs 12
+wait_on_run floating_point_cmp_synth_1
+
+update_compile_order -fileset sources_1
+generate_target all [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_div/floating_point_div.xci]
+catch { config_ip_cache -export [get_ips -all floating_point_div] }
+export_ip_user_files -of_objects [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_div/floating_point_div.xci] -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_div/floating_point_div.xci]
+launch_runs floating_point_div_synth_1 -jobs 12
+wait_on_run floating_point_div_synth_1
+
+update_compile_order -fileset sources_1
+generate_target all [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_mul/floating_point_mul.xci]
+catch { config_ip_cache -export [get_ips -all floating_point_mul] }
+export_ip_user_files -of_objects [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_mul/floating_point_mul.xci] -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_mul/floating_point_mul.xci]
+launch_runs floating_point_mul_synth_1 -jobs 12
+wait_on_run floating_point_mul_synth_1
+
+update_compile_order -fileset sources_1
+generate_target all [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_exp/floating_point_exp.xci]
+catch { config_ip_cache -export [get_ips -all floating_point_exp] }
+export_ip_user_files -of_objects [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_exp/floating_point_exp.xci] -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_exp/floating_point_exp.xci]
+launch_runs floating_point_exp_synth_1 -jobs 12
+wait_on_run floating_point_exp_synth_1
+
+update_compile_order -fileset sources_1
+generate_target all [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_sqrt/floating_point_sqrt.xci]
+catch { config_ip_cache -export [get_ips -all floating_point_sqrt] }
+export_ip_user_files -of_objects [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_sqrt/floating_point_sqrt.xci] -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_sqrt/floating_point_sqrt.xci]
+launch_runs floating_point_sqrt_synth_1 -jobs 12
+wait_on_run floating_point_sqrt_synth_1
