@@ -24,6 +24,25 @@ module VPU_FP_MAX
 );
     import VPU_PKG::*;
     
+    logic   [OPERAND_WIDTH-1:0]             op_0_temp;
+    logic   [OPERAND_WIDTH-1:0]             op_1_temp;
+    logic   [OPERAND_WIDTH-1:0]             op_2_temp;
+
+    always_ff @(posedge clk) begin
+        if(!rst_n) begin
+            op_0_temp                       <= {OPERAND_WIDTH{1'b0}};
+            op_1_temp                       <= {OPERAND_WIDTH{1'b0}};
+            op_2_temp                       <= {OPERAND_WIDTH{1'b0}};
+        end else if(start_i) begin
+            op_0_temp                       <= op_0;
+            op_1_temp                       <= op_1;
+            if(op_valid[SRAM_R_PORT_CNT-1]) begin
+                op_2_temp                   <= op_2;
+            end
+        end
+    end
+
+
     logic                                   result_0_data_buff;
    
     always_ff @(posedge clk) begin
@@ -43,10 +62,10 @@ module VPU_FP_MAX
     
     always_comb begin
        if(op_valid[SRAM_R_PORT_CNT-1]) begin
-            result                          = result_1_data[0] ? (result_0_data[0] ? op_0 : op_1) : op_2;
+            result                          = result_1_data[0] ? (result_0_data_buff ? op_0_temp : op_1_temp) : op_2_temp;
             done                            = result_1_valid;
         end else begin
-            result                          = result_0_data[0] ? op_0 : op_1;
+            result                          = result_0_data[0] ? op_0_temp : op_1_temp;
             done                            = result_0_valid;
         end
     end
@@ -68,9 +87,9 @@ module VPU_FP_MAX
     floating_point_cmp fp_max_1 (
         .aclk                               (clk),
         .s_axis_a_tvalid                    (result_0_valid & op_valid[SRAM_R_PORT_CNT-1]),
-        .s_axis_a_tdata                     ((result_0_data == 1'b1) ? op_0 : op_1),
+        .s_axis_a_tdata                     ((result_0_data == 1'b1) ? op_0_temp : op_1_temp),
         .s_axis_b_tvalid                    (result_0_valid & op_valid[SRAM_R_PORT_CNT-1]),
-        .s_axis_b_tdata                     (op_2),
+        .s_axis_b_tdata                     (op_2_temp),
         .m_axis_result_tvalid               (result_1_valid),
         .m_axis_result_tdata                (result_1_data),
         .m_axis_result_tuser                ()

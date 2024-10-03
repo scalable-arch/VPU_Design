@@ -21,8 +21,8 @@ module VPU_FP_EXP
 );
     import VPU_PKG::*;
     
-    logic   [OPERAND_WIDTH-1:0]             result, result_valid;
-    logic   [31:0]                          extended_op_0;
+    logic   [(OPERAND_WIDTH*2)-1:0]         result;
+    logic   [(OPERAND_WIDTH*2)-1:0]         extended_op_0;
     assign  extended_op_0                   = {{op_0},{16{1'b0}}};
     
     floating_point_exp fp_exp_0 (
@@ -36,6 +36,6 @@ module VPU_FP_EXP
     
 
     // Assign
-    assign result_o                         = result;
+    assign result_o                         = result[(OPERAND_WIDTH*2)-1:OPERAND_WIDTH];
 
 endmodule

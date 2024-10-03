@@ -34,7 +34,14 @@ module VPU_FP_ADD_SUB
     logic                                   done;
     logic   [7:0]                           operation;
     
-    
+    logic   [OPERAND_WIDTH-1:0]             op_2_temp;
+    always_ff @(posedge clk) begin
+        if(!rst_n) begin
+            op_2_temp                       <= {OPERAND_WIDTH{1'b0}};
+        end else if(start_i & op_valid[SRAM_R_PORT_CNT-1]) begin
+            op_2_temp                       <= op_2;
+        end
+    end
     
     floating_point_add_sub fp_add_sub_0 (
         .aclk                               (clk),
@@ -54,7 +61,7 @@ module VPU_FP_ADD_SUB
        .s_axis_a_tvalid                     (result_0_tvalid & op_valid[SRAM_R_PORT_CNT-1]),
         .s_axis_a_tdata                     (result_0_data),
         .s_axis_b_tvalid                    (result_0_tvalid & op_valid[SRAM_R_PORT_CNT-1]),
-        .s_axis_b_tdata                     (op_2),
+        .s_axis_b_tdata                     (op_2_temp),
         .s_axis_operation_tvalid            (result_0_tvalid & op_valid[SRAM_R_PORT_CNT-1]),
         .s_axis_operation_tdata             (operation),
         .m_axis_result_tvalid               (result_1_tvalid),

@@ -33,11 +33,11 @@ module VPU_FP_MUL
         .s_axis_b_tdata                     (op_1),
         .m_axis_result_tvalid               (result_valid),
         .m_axis_result_tdata                (result),
-        .m_axis_result_tuser                (done_o)
+        .m_axis_result_tuser                ()
     );
     
 
     // Assign
     assign result_o                         = result;
-
+    assign  done_o                          = result_valid;
 endmodule
