@@ -257,8 +257,8 @@ void load_data_from_file(const char* filename) {
 
         for (int i = 0; i < VECTOR_SIZE; i++) {
             xip_fpo_set_flt(src1[i], fp_data[i]);
-            xip_fpo_set_flt(src2[i], fp_data[i + 31]);
-            xip_fpo_set_flt(src3[i], fp_data[i + 63]);
+            xip_fpo_set_flt(src2[i], fp_data[i + 32]);
+            xip_fpo_set_flt(src3[i], fp_data[i + 64]);
         }
 
         // vector add
@@ -332,36 +332,6 @@ void load_data_from_file(const char* filename) {
         //----------------------------------------------------------
         //vector_redmax(dst, src1, res);
 
-        // vector print
-        //----------------------------------------------------------
-        //for (int i = 0; i < VECTOR_SIZE; i++) {
-        //    result1 = NULL;
-        //    exp1 = 0;
-        //    result1 = xip_fpo_get_str(result1, &exp1, 10, 0, src1[i]);
-        //    printf("0.%s * 10^%d\n", result1, exp1);
-        //}
-        //printf("\n");
-        //for (int i = 0; i < VECTOR_SIZE; i++) {
-        //    result2 = NULL;
-        //    exp2 = 0;
-        //    result2 = xip_fpo_get_str(result2, &exp2, 10, 0, src2[i]);
-        //    printf("0.%s * 10^%d\n", result2, exp2);
-        //}
-        //printf("\n");
-        //for (int i = 0; i < VECTOR_SIZE; i++) {
-        //    result3 = NULL;
-        //    exp3 = 0;
-        //    result3 = xip_fpo_get_str(result3, &exp3, 10, 0, src3[i]);
-        //    printf("0.%s * 10^%d\n", result3, exp3);
-        //}
-        //printf("\n");
-        //for (int i = 0; i < VECTOR_SIZE; i++) {
-        //    result4 = NULL;
-        //    exp4 = 0;
-        //    result4 = xip_fpo_get_str(result4, &exp4, 10, 0, dst[i]);
-        //    printf("0.%s * 10^%d\n", result4, exp4);
-        //}
-        
         // convert bf16 dst(xip_fpo_t) to fp32
         // and convert agaion fp32 to bf16 (uint16_t)
         // write to txt file
