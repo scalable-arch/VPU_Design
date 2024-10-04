@@ -23,5 +23,5 @@ jobs:
         env:
           VPU_HOME: ${{github.workspace}}
           ACTION_HOME: ${{github.workspace}}/actions
-          DESIGN_TOP: VPU_TOP_WRAPPER
+          DESIGN_TOP: VPU_TOP
  
