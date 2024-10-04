@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Synthesis
+      - name: Simulation
         run: |
           source ${{github.workspace}}/env.source ${{github.workspace}}
           ${{github.workspace}}/actions/action.sim_vivado
