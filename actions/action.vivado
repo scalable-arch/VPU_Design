@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source /tools/Xilinx/Vivado/2024.1/settings64.sh
-
-vivado -mode tcl -source ${ACTION_HOME}/vivado/vivado.tcl
