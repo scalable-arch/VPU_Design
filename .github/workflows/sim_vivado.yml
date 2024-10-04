@@ -1,7 +1,7 @@
 # This file describes a workflow that runs synthesis
 # on a pull request to the main branch
-name: Synthesis-Vivado
-run-name: Run Vivado Synthesis (Xilinx) from ${{ github.actor }}
+name: Simulation-Vivado
+run-name: Run Vivado Simulation (Xilinx) from ${{ github.actor }}
 on:
   pull_request:
     branches:
@@ -18,7 +18,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Synthesis
         run: |
-          ${{github.workspace}}/actions/action.vivado
+          source ${{github.workspace}}/env.source ${{github.workspace}}
+          ${{github.workspace}}/actions/action.sim_vivado
         env:
           CMSS_HOME: ${{github.workspace}}
           ACTION_HOME: ${{github.workspace}}/actions
