@@ -1,0 +1,27 @@
+# This file describes a workflow that runs synthesis
+# on a pull request to the main branch
+name: Simulation-Vivado
+run-name: Run Vivado Simulation (Xilinx) from ${{ github.actor }}
+on:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '30 5 * * *'    # 5:30 AM (UTC), any day of the month, any month, any day of the week
+  workflow_dispatch:
+
+jobs:
+  Vivado:
+    runs-on: self-hosted        # runs on a server with Xilinx Vivado installed
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Simulation
+        run: |
+          source ${{github.workspace}}/env.source ${{github.workspace}}
+          ${{github.workspace}}/actions/action.sim_vivado
+        env:
+          VPU_HOME: ${{github.workspace}}
+          ACTION_HOME: ${{github.workspace}}/actions
+          DESIGN_TOP: VPU_TOP
+ 
