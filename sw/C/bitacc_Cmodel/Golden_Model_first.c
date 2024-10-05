@@ -294,7 +294,7 @@ void load_data_from_file(const char* filename) {
         // vector max3
         // dst = max(src1, src2, src3)
         //----------------------------------------------------------
-        //vector_max3(dst, src1, src2, src3, res1, res2, res3);
+        vector_max3(dst, src1, src2, src3, **res1, **res2, **res3);
 
         // vector avg
         // dst = (src1 + src2)/2
@@ -314,7 +314,7 @@ void load_data_from_file(const char* filename) {
         // vector sqrt
         // dst = sqrt(src1)
         //----------------------------------------------------------
-        vector_sqrt(dst, src1);
+        //vector_sqrt(dst, src1);
 
         // vector reciprocal
         // dst = 1/src1
