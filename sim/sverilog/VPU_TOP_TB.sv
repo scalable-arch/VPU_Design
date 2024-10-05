@@ -1,6 +1,6 @@
 `include "VPU_PKG.svh"
 `define TIMEOUT_DELAY   100000000
-`define MEM_DEPTH 10
+`define MEM_DEPTH 100
 `define RANDOM_SEED     12123344
 
 import "DPI-C" context function string get_env_var(input string var_name);
@@ -36,6 +36,7 @@ module VPU_TOP_TB ();
     dst_queue                       tot_dst_queue[VPU_PKG::SRAM_W_PORT_CNT];
 
     reg [VPU_PKG::OPERAND_WIDTH-1:0] mem_dump[VPU_PKG::ELEM_PER_DIM_CNT * VPU_PKG::SRAM_R_PORT_CNT * `MEM_DEPTH];
+    reg [VPU_PKG::OPERAND_WIDTH-1:0] mem_dump_2[VPU_PKG::ELEM_PER_DIM_CNT * VPU_PKG::SRAM_R_PORT_CNT * `MEM_DEPTH];
     reg [VPU_PKG::OPERAND_WIDTH-1:0] golden_ref_dump[VPU_PKG::ELEM_PER_DIM_CNT * REQ_CNT];
 
 
@@ -113,10 +114,14 @@ module VPU_TOP_TB ();
         vpu_src2_port_if.init();
         vpu_dst0_port_if.init();
 
-        $display("Loading Data[%s]...",{testvector_path,sub_path});
         sub_path = "/bf16_numbers.txt";
+        $display("Loading Data[%s]...",{testvector_path,sub_path});
         $readmemh({testvector_path,sub_path},mem_dump);
         
+        sub_path = "/bf16_numbers_only_positive.txt";
+        $display("Loading Data2[%s]...",{testvector_path,sub_path});
+        $readmemh({testvector_path,sub_path},mem_dump_2);
+
         fill_opcode();
         @(posedge rst_n); 
         repeat (10) @(posedge clk);
@@ -146,12 +151,16 @@ module VPU_TOP_TB ();
         //$write("Finish Gen Instr...\n");
     endtask
 
-    task fill_src_operand_queue();
+    task fill_src_operand_queue(VPU_PKG::vpu_h2d_req_opcode_t _opcode);
         operand_t operand;
         for(int i = 0; i < `MEM_DEPTH; i++) begin
             for(int j = 0; j < SRAM_R_PORT_CNT; j++) begin
                 for(int k = 0; k < ELEM_PER_DIM_CNT; k++) begin
-                    operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_R_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
+                    if((_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FSQRT) || (_opcode ==VPU_PKG::VPU_H2D_REQ_OPCODE_FRECIP)) begin
+                        operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump_2[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_R_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
+                    end else begin
+                        operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_R_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
+                    end
                 end
                 tot_src_queue[j].push_back(operand);
                 //$write("src[%d]port | answer : [0x%08h]\n", j, operand.operand);
@@ -202,7 +211,7 @@ module VPU_TOP_TB ();
         end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FSQRT) begin
             sub_path = "/sqrt_out.txt";
         end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FRECIP) begin
-            sub_path = "/rec_out.txt";
+            sub_path = "/reci_out.txt";
         end else begin
             sub_path = "";
         end
@@ -212,7 +221,7 @@ module VPU_TOP_TB ();
 
     task build_test(VPU_PKG::vpu_h2d_req_opcode_t _opcode);
         clear_src_operand_queue();
-        fill_src_operand_queue();
+        fill_src_operand_queue(_opcode);
         clear_dst_operand_queue();
         fill_golden_ref_mem(_opcode);
         gen_instr(_opcode);
