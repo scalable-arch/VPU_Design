@@ -12,9 +12,7 @@ module VPU_TOP_TB ();
     reg                     rst_n;
     
     localparam              REQ_CNT = `MEM_DEPTH;
-    string                  testvector_path;
-    string                  sub_path;
-    string                  path;
+    string vpu_home;
     typedef struct  {
         bit [VPU_PKG::DIM_SIZE-1:0] operand; 
     } operand_t;
@@ -23,12 +21,10 @@ module VPU_TOP_TB ();
     int                             opcode_value;
     string                          test_vector_f;
     string                          golden_ref_f;
-    bit                             done;
-    int                             cnt =0;
     // Data Structure
-    VPU_PKG::vpu_h2d_req_opcode_t   opcode_queue[$];
-    VPU_PKG::vpu_h2d_req_opcode_t   c_opcode;
-
+    //VPU_PKG::vpu_h2d_req_opcode_t   opcode_queue[$];
+    
+    VPU_PKG::vpu_h2d_req_opcode_t   opcode = 'h0D;
     VPU_PKG::vpu_h2d_req_instr_t    instr_queue[$];
     typedef operand_t               src_queue[$];
     typedef operand_t               dst_queue[$];
@@ -45,10 +41,40 @@ module VPU_TOP_TB ();
 		$finish;
 	end
     
-    // Search Directory Path 
+    // opcode generation
     initial begin
-        testvector_path = get_env_var("TB_TESTVECTOR");
-        $display("TESTVECTOR : %s", testvector_path);
+        if ($value$plusargs("OPCODE=%d", opcode_value)) begin
+            //opcode = vpu_h2d_req_opcode_t'(opcode_value & {8{1'b1}});
+            $display("OPCODE : %05d", opcode_value);
+            //opcode = vpu_h2d_req_opcode_t'(opcode_value);
+        end else begin
+            $display("OPCODE Not Found");
+        end
+    end
+
+    // opcode generation
+    initial begin
+        if ($value$plusargs("TESTVECTOR=%s", test_vector_f)) begin
+            $display("TESTVECTOR : %s", test_vector_f);
+            vpu_home = get_env_var("VPU_HOME");
+            $display("TESTVECTOR : %s", vpu_home);
+            //opcode = vpu_h2d_req_opcode_t'(opcode_value);
+        end else begin
+            $display("TESTVECTOR Not Found");
+            vpu_home = get_env_var("VPU_HOME");
+            $display("TESTVECTOR : %s", vpu_home);
+        end
+    end
+    //w
+
+    // opcode generation
+    initial begin
+        if ($value$plusargs("GOLDEN_FILE=%s", golden_ref_f)) begin
+            $display("GOLDEN_FILE : %s", golden_ref_f);
+            //opcode = vpu_h2d_req_opcode_t'(opcode_value);
+        end else begin
+            $display("GOLDEN_FILE Not Found");
+        end
     end
 
     // clock generation
@@ -113,37 +139,31 @@ module VPU_TOP_TB ();
         vpu_src2_port_if.init();
         vpu_dst0_port_if.init();
 
-        $display("Loading Data[%s]...",{testvector_path,sub_path});
-        sub_path = "/bf16_numbers.txt";
-        $readmemh({testvector_path,sub_path},mem_dump);
-        
-        fill_opcode();
+        $display("Loading Data...");
+        $readmemh(test_vector_f,mem_dump);
+
+        $display("Loading Golden Ref...");
+        $readmemh(golden_ref_f,golden_ref_dump);
+
         @(posedge rst_n); 
         repeat (10) @(posedge clk);
     endtask
     
-    task fill_opcode();
-        VPU_PKG::vpu_h2d_req_opcode_t   opcode;
-        for(int i = 1; i <= VPU_PKG::INSTR_NUM; i++) begin
-            opcode = vpu_h2d_req_opcode_t'(i & {8{1'b1}});
-            opcode_queue.push_back(opcode);
-        end
-    endtask
 
-    task gen_instr(VPU_PKG::vpu_h2d_req_opcode_t _opcode);
+    task gen_instr();
         VPU_PKG::vpu_h2d_req_instr_t instr;
         for(int i = 0; i < REQ_CNT; i++) begin
-            instr.opcode            = _opcode;
-            //$write("Gen Opcode...%1d\n", instr.opcode);
+            instr.opcode            = vpu_h2d_req_opcode_t'(opcode_value & {8{1'b1}});
+            $write("Gen Opcode...%1d\n", instr.opcode);
             instr.src2              = $random & {VPU_PKG::OPERAND_ADDR_WIDTH{1'b1}};
             instr.src1              = $random & {VPU_PKG::OPERAND_ADDR_WIDTH{1'b1}};
             instr.src0              = $random & {VPU_PKG::OPERAND_ADDR_WIDTH{1'b1}};
             instr.dst0              = $random & {VPU_PKG::OPERAND_ADDR_WIDTH{1'b1}};
 
             instr_queue.push_back(instr);
-            //$write("Gen Instr...%1d\n", i);
+            $write("Gen Instr...%1d\n", i);
         end
-        //$write("Finish Gen Instr...\n");
+        $write("Finish Gen Instr...\n");
     endtask
 
     task fill_src_operand_queue();
@@ -154,7 +174,7 @@ module VPU_TOP_TB ();
                     operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_R_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
                 end
                 tot_src_queue[j].push_back(operand);
-                //$write("src[%d]port | answer : [0x%08h]\n", j, operand.operand);
+                $write("src[%d]port | answer : [0x%08h]\n", j, operand.operand);
             end
         end
         repeat (3) @(posedge clk);
@@ -166,89 +186,32 @@ module VPU_TOP_TB ();
         end 
         repeat (3) @(posedge clk);
     endtask
-    
-    task clear_src_operand_queue();
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
-            tot_src_queue[i].delete();
-        end 
-        repeat (3) @(posedge clk);
-    endtask
-    
-    task fill_golden_ref_mem(VPU_PKG::vpu_h2d_req_opcode_t _opcode);
-        if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FADD) begin
-            sub_path = "/add_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FSUB) begin
-            sub_path = "/sub_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FMUL) begin
-            sub_path = "/mul_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FDIV) begin
-            sub_path = "/div_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FADD3) begin
-            sub_path = "/add3_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FSUM) begin
-            sub_path = "/redsum_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FMAX) begin
-            sub_path = "/redmax_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FMAX2) begin
-            sub_path = "/max_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FMAX3) begin
-            sub_path = "/max3_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FAVG2) begin
-            sub_path = "/avg_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FAVG3) begin
-            sub_path = "/avg3_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FEXP) begin
-            sub_path = "/exp_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FSQRT) begin
-            sub_path = "/sqrt_out.txt";
-        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FRECIP) begin
-            sub_path = "/rec_out.txt";
-        end else begin
-            sub_path = "";
-        end
-        $readmemh({testvector_path,sub_path},golden_ref_dump);
-        $display("Loading GL Data[%s]...",{testvector_path,sub_path});
-    endtask
 
-    task build_test(VPU_PKG::vpu_h2d_req_opcode_t _opcode);
-        clear_src_operand_queue();
+    task build_test();
         fill_src_operand_queue();
-        clear_dst_operand_queue();
-        fill_golden_ref_mem(_opcode);
-        gen_instr(_opcode);
-    endtask
-
-    task run_test();
-        done = 1'b0;
-        fork: fork_1
-            driver_req();
-            driver_src0();
-            driver_src1();
-            driver_src2();
-            oMonitor();
-        join_any: fork_1
-        wait(done);
-        @(posedge clk);
-        //done = 1'b0;
-        disable fork_1;
-        //$write("Iter Pass...");
+        clear_dst_operand_queue(); 
+        gen_instr();
     endtask
 
     task run();
-        while (opcode_queue.size()!=0) begin
-            c_opcode = opcode_queue.pop_front();
-            build_test(c_opcode);
-            @(posedge clk);
-            run_test();
-            //$write("Run_Test Pass : %05d\n",done);
-            @(posedge clk);
-        end
+        fork
+            driver_req();
+            driver_src0;
+            driver_src1;
+            driver_src2;
+            //driver_dst0;
+            oMonitor();
+        join
     endtask
-    
+
+    task run_test();
+        run();
+    endtask
+
     task driver_req();
         VPU_PKG::vpu_h2d_req_instr_t instr;
         while (instr_queue.size()!=0) begin
-            //$write("Push Instr...%1d\n", instr_queue.size());
+            $write("Push Instr...%1d\n", instr_queue.size());
             instr = instr_queue.pop_front();	// pop a request from the queue
             vpu_req_if.gen_request(instr);	    // drive to DUT
         end
@@ -260,10 +223,8 @@ module VPU_TOP_TB ();
         while (tot_src_queue[0].size()!=0) begin
             operand = tot_src_queue[0].pop_front();
             vpu_src0_port_if.sram_read_transaction(operand.operand);
-            //$write("Read0 trans finish...%1d\n", tot_src_queue[0].size());
+            $write("Read0 trans finish...%1d\n", tot_src_queue[0].size());
         end
-        //$write("diver_src0 finish...\n");
-        
     endtask
 
     task driver_src1();
@@ -271,10 +232,8 @@ module VPU_TOP_TB ();
         while (tot_src_queue[1].size()!=0) begin
             operand = tot_src_queue[1].pop_front();
             vpu_src1_port_if.sram_read_transaction(operand.operand);
-            //$write("Read1 trans finish...%1d\n", tot_src_queue[1].size());
+            $write("Read1 trans finish...%1d\n", tot_src_queue[1].size());
         end
-        //$write("diver_src1 finish...\n");
-        
     endtask
 
     task driver_src2();
@@ -282,34 +241,47 @@ module VPU_TOP_TB ();
         while (tot_src_queue[2].size()!=0) begin
             operand = tot_src_queue[2].pop_front();
             vpu_src2_port_if.sram_read_transaction(operand.operand);
-            //$write("Read2 trans finish...%1d\n", tot_src_queue[2].size());
+            $write("Read2 trans finish...%1d\n", tot_src_queue[2].size());
         end
-        //$write("diver_src2 finish...\n");
-        
     endtask
+
+    /*
+    task driver_dst0();
+        operand_t operand;
+        while (tot_dst_queue[0].size() < `MEM_DEPTH) begin
+            vpu_dst0_port_if.sram_write_transaction(operand.operand);
+            tot_dst_queue[0].push_back(operand);
+            $write("Write trans finish...%1d\n", tot_dst_queue[0].size());
+        end
+    endtask
+    */
+
 
     task oMonitor();
         operand_t result;
         operand_t answer;
-        cnt = 0;
-        while (cnt < REQ_CNT) begin
+        int cnt = 0;
+        while (1) begin
+            if( cnt >= REQ_CNT) begin
+                $write("<< All Pass!!! %1d : ", cnt);
+                $finish;
+            end
+
             vpu_dst0_port_if.sram_write_transaction(result.operand);
             for(int i = 0; i < ELEM_PER_DIM_CNT; i++) begin
                 answer.operand[(i*VPU_PKG::OPERAND_WIDTH)+:(VPU_PKG::OPERAND_WIDTH)] = golden_ref_dump[((cnt)*(VPU_PKG::ELEM_PER_DIM_CNT))+i];
             end
             if(result != answer) begin
-                $write("<< %5dth request [Error][Incorrect] (OPCODE %1d) : ", cnt, c_opcode);
+                $write("<< %5dth request [Error][Incorrect] (OPCODE %1d) : ", cnt, opcode);
                 $write("result [0x%08h] | answer : [0x%08h]\n", result.operand, answer.operand);
-                //@(posedge clk);
-                //$finish;
+                @(posedge clk);
+                $finish;
             end else begin
-                $write("<< %5dth request [Correct] (OPCODE %1d) : ", cnt, c_opcode);
+                $write("<< %5dth request [Correct] (OPCODE %1d) : ", cnt, opcode);
                 $write("result [0x%08h] | answer : [0x%08h]\n", result.operand, answer.operand);
             end
             cnt++;
         end
-        $write("<< All Pass!!! %1d : \n", c_opcode);
-        done = 1'b1;
     endtask
     
 
@@ -317,9 +289,10 @@ module VPU_TOP_TB ();
         $display("====================Start Simulation!====================");
         
         test_init();
-        
-        run();
-    
+        build_test();
+        //fork
+            run_test();
+        //join
         $display("====================Simulation Done!====================");
         $finish;
     end

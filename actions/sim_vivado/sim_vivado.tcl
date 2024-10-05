@@ -72,16 +72,23 @@ add_files -fileset sim_1 [get_filename_arr $sim_filelists $env_map]
 
 update_compile_order -fileset sim_1 
 
+set vpu_home $env(VPU_HOME)
+set sv_root_path "$env(VPU_HOME)/sw/C/DPI/xsim.dir/work/xsc/"
+set inputfile_path "/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt"
 #
 set_property SOURCE_SET sources_1 [get_filesets sim_1]
 set_property include_dirs $search_path [get_filesets sim_1]
 set_property top VPU_TOP_TB [get_filesets sim_1]
 set_property -name {xsim.compile.xvlog.more_options} -value {-L uvm} -objects [get_filesets sim_1]
 set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
-set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
+#set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
+#set_property -name {xsim.elaborate.xelab.more_options} -value {-sv_root $vpu_home/sw/C/DPI/xsim.dir/work/xsc/ -sv_lib dpi} -objects [get_filesets sim_1]
+#set_property -name {xsim.elaborate.xelab.more_options} -value {-sv_root [eval $vpu_home/sw/C/DPI/xsim.dir/work/xsc/] -sv_lib dpi} -objects [get_filesets sim_1]
+set_property -name {xsim.elaborate.xelab.more_options} -value "-sv_root $sv_root_path -sv_lib dpi" -objects [get_filesets sim_1]
+#set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=1 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/add_out.txt"} -objects [get_filesets sim_1]
+#set_property -name {xsim.simulate.xsim.more_options} -value "-testplusarg " -objects [get_filesets sim_1]
 
-set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=1 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/add_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
+launch_simulation
 
 # set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=2 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/sub_out.txt"} -objects [get_filesets sim_1]
 # launch_simulation

@@ -13,7 +13,7 @@ package VPU_PKG;
 
     /* VPU Instruction Config */
     localparam  INSTR_WIDTH                 = 136;
-    localparam  INSTR_NUM                   = 12;
+    localparam  INSTR_NUM                   = 14;
     localparam  OPCODE_WIDTH                = 8;
     localparam  OPERAND_WIDTH               = ELEM_WIDTH;
     localparam  OPERAND_ADDR_WIDTH          = 32;
