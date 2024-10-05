@@ -2,4 +2,7 @@
 
 source /tools/Xilinx/Vivado/2024.1/settings64.sh
 
+cd ${VPU_HOME}/sw/C/Goldenmodel/
+./gen.sh
+
 vivado -mode tcl -source ${ACTION_HOME}/sim_vivado/sim_vivado.tcl
