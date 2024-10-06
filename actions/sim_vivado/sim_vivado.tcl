@@ -81,51 +81,8 @@ set_property include_dirs $search_path [get_filesets sim_1]
 set_property top VPU_TOP_TB [get_filesets sim_1]
 set_property -name {xsim.compile.xvlog.more_options} -value {-L uvm} -objects [get_filesets sim_1]
 set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
-#set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
-#set_property -name {xsim.elaborate.xelab.more_options} -value {-sv_root $vpu_home/sw/C/DPI/xsim.dir/work/xsc/ -sv_lib dpi} -objects [get_filesets sim_1]
-#set_property -name {xsim.elaborate.xelab.more_options} -value {-sv_root [eval $vpu_home/sw/C/DPI/xsim.dir/work/xsc/] -sv_lib dpi} -objects [get_filesets sim_1]
 set_property -name {xsim.elaborate.xelab.more_options} -value "-sv_root $sv_root_path -sv_lib dpi" -objects [get_filesets sim_1]
-#set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=1 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/add_out.txt"} -objects [get_filesets sim_1]
-#set_property -name {xsim.simulate.xsim.more_options} -value "-testplusarg " -objects [get_filesets sim_1]
 
 launch_simulation
 
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=2 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/sub_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=3 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/mul_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-# 출력이 안나옴
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=4 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/div_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=5 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/add3_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=6 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/redsum_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=7 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/redmax_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=8 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/max_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=9 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/max3_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=10 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/avg_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=11 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/avg3_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=12 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/exp_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=13 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers_for_sqrt.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/sqrt_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
-
-# set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg "OPCODE=14 TESTVECTOR=/home/rhgksdma/VPU_Design/inputfile/bf16_numbers_for_sqrt.txt GOLDEN_FILE=/home/rhgksdma/VPU_Design/inputfile/rec_out.txt"} -objects [get_filesets sim_1]
-# launch_simulation
+run all
