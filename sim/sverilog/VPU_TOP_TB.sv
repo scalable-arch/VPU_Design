@@ -23,8 +23,10 @@ module VPU_TOP_TB ();
     int                             opcode_value;
     string                          test_vector_f;
     string                          golden_ref_f;
+
     bit                             done;
-    int                             cnt =0;
+    int                             cnt = 0;
+
     // Data Structure
     VPU_PKG::vpu_h2d_req_opcode_t   opcode_queue[$];
     VPU_PKG::vpu_h2d_req_opcode_t   c_opcode;
@@ -139,16 +141,13 @@ module VPU_TOP_TB ();
         VPU_PKG::vpu_h2d_req_instr_t instr;
         for(int i = 0; i < REQ_CNT; i++) begin
             instr.opcode            = _opcode;
-            //$write("Gen Opcode...%1d\n", instr.opcode);
             instr.src2              = $random & {VPU_PKG::OPERAND_ADDR_WIDTH{1'b1}};
             instr.src1              = $random & {VPU_PKG::OPERAND_ADDR_WIDTH{1'b1}};
             instr.src0              = $random & {VPU_PKG::OPERAND_ADDR_WIDTH{1'b1}};
             instr.dst0              = $random & {VPU_PKG::OPERAND_ADDR_WIDTH{1'b1}};
 
             instr_queue.push_back(instr);
-            //$write("Gen Instr...%1d\n", i);
         end
-        //$write("Finish Gen Instr...\n");
     endtask
 
     task fill_src_operand_queue(VPU_PKG::vpu_h2d_req_opcode_t _opcode);
@@ -163,7 +162,6 @@ module VPU_TOP_TB ();
                     end
                 end
                 tot_src_queue[j].push_back(operand);
-                //$write("src[%d]port | answer : [0x%08h]\n", j, operand.operand);
             end
         end
         repeat (3) @(posedge clk);
@@ -238,26 +236,22 @@ module VPU_TOP_TB ();
         join_any: fork_1
         wait(done);
         @(posedge clk);
-        //done = 1'b0;
         disable fork_1;
-        //$write("Iter Pass...");
     endtask
 
     task run();
         while (opcode_queue.size()!=0) begin
             c_opcode = opcode_queue.pop_front();
             build_test(c_opcode);
-            @(posedge clk);
+            //@(posedge clk);
             run_test();
-            //$write("Run_Test Pass : %05d\n",done);
-            @(posedge clk);
+            //@(posedge clk);
         end
     endtask
     
     task driver_req();
         VPU_PKG::vpu_h2d_req_instr_t instr;
         while (instr_queue.size()!=0) begin
-            //$write("Push Instr...%1d\n", instr_queue.size());
             instr = instr_queue.pop_front();	// pop a request from the queue
             vpu_req_if.gen_request(instr);	    // drive to DUT
         end
@@ -269,10 +263,7 @@ module VPU_TOP_TB ();
         while (tot_src_queue[0].size()!=0) begin
             operand = tot_src_queue[0].pop_front();
             vpu_src0_port_if.sram_read_transaction(operand.operand);
-            //$write("Read0 trans finish...%1d\n", tot_src_queue[0].size());
         end
-        //$write("diver_src0 finish...\n");
-        
     endtask
 
     task driver_src1();
@@ -280,10 +271,7 @@ module VPU_TOP_TB ();
         while (tot_src_queue[1].size()!=0) begin
             operand = tot_src_queue[1].pop_front();
             vpu_src1_port_if.sram_read_transaction(operand.operand);
-            //$write("Read1 trans finish...%1d\n", tot_src_queue[1].size());
         end
-        //$write("diver_src1 finish...\n");
-        
     endtask
 
     task driver_src2();
@@ -291,10 +279,7 @@ module VPU_TOP_TB ();
         while (tot_src_queue[2].size()!=0) begin
             operand = tot_src_queue[2].pop_front();
             vpu_src2_port_if.sram_read_transaction(operand.operand);
-            //$write("Read2 trans finish...%1d\n", tot_src_queue[2].size());
         end
-        //$write("diver_src2 finish...\n");
-        
     endtask
 
     task oMonitor();
@@ -309,26 +294,28 @@ module VPU_TOP_TB ();
             if(result != answer) begin
                 $write("<< %5dth request [Error][Incorrect] (OPCODE %1d) : ", cnt, c_opcode);
                 $write("result [0x%08h] | answer : [0x%08h]\n", result.operand, answer.operand);
-                //@(posedge clk);
-                //$finish;
+                @(posedge clk);
+                $finish;
             end else begin
                 $write("<< %5dth request [Correct] (OPCODE %1d) : ", cnt, c_opcode);
                 $write("result [0x%08h] | answer : [0x%08h]\n", result.operand, answer.operand);
             end
             cnt++;
         end
-        $write("<< All Pass!!! %1d : \n", c_opcode);
+        @(posedge clk);
+        if(cnt == REQ_CNT) begin
+            $write("=============[OPCODE:%08h]All Pass=============\n", c_opcode);
+        end else begin
+            $write("[ERROR]][OPCODE:%08h]Fail, Missing Operand Check\n", c_opcode);
+        end
         done = 1'b1;
     endtask
     
 
     initial begin
         $display("====================Start Simulation!====================");
-        
         test_init();
-        
         run();
-    
         $display("====================Simulation Done!====================");
         $finish;
     end
