@@ -294,6 +294,8 @@ module VPU_TOP_TB ();
             if(result != answer) begin
                 $write("<< %5dth request [Error][Incorrect] (OPCODE %1d) : ", cnt, c_opcode);
                 $write("result [0x%08h] | answer : [0x%08h]\n", result.operand, answer.operand);
+                @(posedge clk);
+                $finish;
             end else begin
                 $write("<< %5dth request [Correct] (OPCODE %1d) : ", cnt, c_opcode);
                 $write("result [0x%08h] | answer : [0x%08h]\n", result.operand, answer.operand);
@@ -301,7 +303,11 @@ module VPU_TOP_TB ();
             cnt++;
         end
         @(posedge clk);
-        $write("=============[OPCODE:%ld]All Pass=============\n", c_opcode);
+        if(cnt == REQ_CNT) begin
+            $write("=============[OPCODE:%08h]All Pass=============\n", c_opcode);
+        end else begin
+            $write("[ERROR]][OPCODE:%08h]Fail, Missing Operand Check\n", c_opcode);
+        end
         done = 1'b1;
     endtask
     
