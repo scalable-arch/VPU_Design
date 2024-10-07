@@ -74,7 +74,7 @@ update_compile_order -fileset sim_1
 
 set vpu_home $env(VPU_HOME)
 set sv_root_path "$env(VPU_HOME)/sw/C/DPI/xsim.dir/work/xsc/"
-set inputfile_path "/home/rhgksdma/VPU_Design/inputfile/bf16_numbers.txt"
+
 #
 set_property SOURCE_SET sources_1 [get_filesets sim_1]
 set_property include_dirs $search_path [get_filesets sim_1]
