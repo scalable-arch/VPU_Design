@@ -243,9 +243,9 @@ module VPU_TOP_TB ();
         while (opcode_queue.size()!=0) begin
             c_opcode = opcode_queue.pop_front();
             build_test(c_opcode);
-            @(posedge clk);
+            //@(posedge clk);
             run_test();
-            @(posedge clk);
+            //@(posedge clk);
         end
     endtask
     
@@ -300,6 +300,7 @@ module VPU_TOP_TB ();
             end
             cnt++;
         end
+        @(posedge clk);
         $write("=============[OPCODE:%ld]All Pass=============\n", c_opcode);
         done = 1'b1;
     endtask
