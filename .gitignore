@@ -5,3 +5,4 @@ vivado/
 actions/sim_vivado/*.jou
 actions/sim_vivado/*.log
 *.str
+*.rpt

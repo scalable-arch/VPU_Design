@@ -2,6 +2,7 @@
 
 source /tools/Xilinx/Vivado/2024.1/settings64.sh
 
+
 rm -rf ${ACTION_HOME}/work.syn
 mkdir ${ACTION_HOME}/work.syn
 cd ${ACTION_HOME}/work.syn
