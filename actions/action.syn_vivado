@@ -2,4 +2,9 @@
 
 source /tools/Xilinx/Vivado/2024.1/settings64.sh
 
+rm -rf work.syn
+mkdir work.syn
+cd work.syn
+
 vivado -mode tcl -source ${ACTION_HOME}/syn_vivado/syn_vivado.tcl
+cd ..

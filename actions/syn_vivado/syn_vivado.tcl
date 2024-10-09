@@ -30,6 +30,9 @@ proc get_filename_arr {filelists env} {
             }  elseif {[string first ".xci" $line2] != -1} {
                 # Xilinx IP
                 lappend results $line2
+            }  elseif {[string first ".xdc" $line2] != -1} {
+                # Xilinx IP
+                lappend results $line2
             }
         }
     }
@@ -56,7 +59,7 @@ lappend env_map "\${VPU_SIM_HOME}"     $env(VPU_HOME)/sim
 
 set design_filelists "$env(VPU_HOME)/design/filelist.f"
 set sim_filelists "$env(VPU_HOME)/sim/filelist.f"
-                   
+
 # Add design files
 add_files -fileset sources_1 [get_filename_arr $design_filelists $env_map]
 
@@ -70,10 +73,19 @@ add_files -fileset sim_1 [get_filename_arr $sim_filelists $env_map]
 
 update_compile_order -fileset sim_1 
 
+# Add constraint file
+add_files -fileset constrs_1 $env(VPU_HOME)/syn/constraint_1.xdc
+
 #
 set_property SOURCE_SET sources_1 [get_filesets sim_1]
 set_property include_dirs $search_path [get_filesets sim_1]
 set_property top VPU_TOP_WRAPPER [get_filesets sim_1]
-
+set_property target_constrs_file $env(VPU_HOME)/syn/constraint_1.xdc [current_fileset -constrset]
 synth_design -top $env(DESIGN_TOP) -part xcvh1582-vsva3697-2MP-e-S
+
+update_compile_order -fileset sources_1
+
+report_timing_summary -delay_type min_max -report_unconstrained -check_timing_verbose -max_paths 10 -input_pins -routable_nets -file $env(VPU_HOME)/actions/work.syn/timing.rpt
+report_utilization -file $env(VPU_HOME)/actions/work.syn/util.rpt -name utilization_1
+
 quit
