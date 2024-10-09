@@ -25,7 +25,7 @@ jobs:
           ACTION_HOME: ${{github.workspace}}/actions
           DESIGN_TOP: VPU_TOP_WRAPPER
       - name: Report (Timing)
-        run: cat work.syn/*.timing.rpt
+        run: cat ${{github.workspace}}/actions/work.syn/*.timing.rpt
       - name: Report (Util)
-        run: cat work.syn/*.util.rpt
+        run: cat ${{github.workspace}}/actions/work.syn/*.util.rpt
  
