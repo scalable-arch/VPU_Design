@@ -40,10 +40,10 @@ module VPU_FP_RECIP
         .s_axis_b_tvalid                    (done),
         .s_axis_b_tdata                     (result),
         .m_axis_result_tvalid               (done_o),
-        .m_axis_result_tdata                (result),
+        .m_axis_result_tdata                (result_o),
         .m_axis_result_tuser                ()
     );
     // Assign
-    assign result_o                         = result;
+    //assign result_o                         = result;
 
 endmodule
