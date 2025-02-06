@@ -10,7 +10,6 @@ module VPU_EXEC_UNIT
 
     input   wire                                        start_i,
     input   VPU_PKG::vpu_exec_req_t                     op_func_i,
-    //input   wire    [VPU_PKG::MAX_DELAY_LG2-1:0]        delay_i,
 
     input   wire    [VPU_PKG::DWIDTH_PER_EXEC-1:0]      operand_i[VPU_PKG::SRC_OPERAND_CNT],
     input   wire    [VPU_PKG::SRC_OPERAND_CNT-1:0]      operand_valid_i,

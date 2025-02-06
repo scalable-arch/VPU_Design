@@ -67,11 +67,16 @@ interface VPU_REQ_IF
             h2d_req_instr.src0      = instr.src0;
             h2d_req_instr.dst0      = instr.dst0;
             valid                   = 1'b1;
-        
-        while (!ready) begin
+
+        if(ready == 1'b1) begin
             @(posedge clk);
+            valid                   = 1'b0;
+        end else begin
+            while (!ready) begin
+                @(posedge clk);
+            end
+            valid               = 1'b0;
         end
-        valid               = 1'b0;
     endtask
     // synopsys translate_on
 
@@ -290,39 +295,3 @@ interface VPU_RESET_IF(input logic clk);
     modport dut(input reset_n);
 endinterface: VPU_RESET_IF
 */
-
-// VPU-Internal Interface
-interface REQ_IF
-(
-    input   wire                        clk,
-    input   wire                        rst_n
-);
-    import VPU_PKG::*;
-
-    logic   [OPCODE_WIDTH-1:0]          opcode;
-    
-    logic   [SRAM_R_PORT_CNT-1:0]       rvalid;
-    logic   [OPERAND_ADDR_WIDTH-1:0]    raddr   [SRAM_R_PORT_CNT];
-    logic   [OPERAND_ADDR_WIDTH-1:0]    waddr;
-    //logic   [MAX_DELAY_LG2-1:0]         delay;
-    vpu_exec_req_t                      op_func;
-    logic                               valid;
-    logic                               ready;
-    
-    
-    modport src (
-        output      opcode, rvalid, raddr, waddr, op_func, valid,
-        input       ready
-    );
-
-    modport dst (
-        input       opcode, rvalid, raddr, waddr, op_func, valid,
-        output      ready
-    );
-    
-    modport mon (
-        input       opcode, rvalid, raddr, waddr, op_func, valid,
-        input       ready
-    );
-endinterface
-

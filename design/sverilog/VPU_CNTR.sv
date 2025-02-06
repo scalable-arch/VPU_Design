@@ -1,17 +1,17 @@
 
 module VPU_CNTR
 #(
-    parameter   MAX_DELAY_LG2   = 4
+    parameter   MAX_DELAY_LG2       = 4
 )
 (
     // clock & reset
-    input                       clk,
-    input                       rst_n,
+    input                           clk,
+    input                           rst_n,
 
     // request from the address decoder
-    input   [MAX_DELAY_LG2-1:0] count,
-    input                       start_i,
-    output                      done_o       
+    input   [MAX_DELAY_LG2-1:0]     count,
+    input                           start_i,
+    output                          done_o       
 );
     localparam  S_IDLE              = 2'b00;
     localparam  S_RUN               = 2'b01;

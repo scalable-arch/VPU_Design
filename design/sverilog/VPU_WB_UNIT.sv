@@ -15,8 +15,8 @@ module VPU_WB_UNIT
     // From VPU_LANE
     input   wire                            wb_data_valid_i,
     input   wire [VPU_PKG::DWIDTH_PER_EXEC-1:0] wb_data_i,
-    // REQ_IF
-    REQ_IF.dst                              req_if,
+
+    input   VPU_PKG::vpu_instr_decoded_t    instr_decoded_i,
 
     // SRAM_W_PORT
     VPU_DST_PORT_IF.host                    vpu_dst0_port_if
@@ -39,7 +39,7 @@ module VPU_WB_UNIT
     logic                                   wlast,      wlast_n;
 
     logic   [EXEC_CNT_LG2-1:0]              cnt,        cnt_n;
-    logic   [DWIDTH_PER_EXEC-1:0]   wb_data [EXEC_CNT];
+    logic   [DWIDTH_PER_EXEC-1:0]           wb_data [EXEC_CNT];
     
     wire    [SRAM_DATA_WIDTH-1:0]           wdata;
 
@@ -64,7 +64,7 @@ module VPU_WB_UNIT
             wlast                           <= wlast_n;
             cnt                             <= cnt_n;
             if(wb_data_valid_i) begin
-                if(req_if.op_func.op_type==EXEC) begin
+                if(instr_decoded_i.op_func.op_type==EXEC) begin
                     wb_data[cnt]            <= wb_data_i;
                 end else begin
                     for(int i = 0; i < EXEC_CNT; i++) begin
@@ -97,8 +97,8 @@ module VPU_WB_UNIT
                 done                        = 1'b1;
                 if(start_i) begin
                     req_n                   = 1'b1;
-                    wid_n                   = get_bank_id(req_if.waddr);
-                    addr_n                  = get_waddr(req_if.waddr);
+                    wid_n                   = get_bank_id(instr_decoded_i.waddr);
+                    addr_n                  = get_waddr(instr_decoded_i.waddr);
                     web_n                   = 1'b0;
                     wlast_n                 = 1'b1;
                     state_n                 = S_VALID;
