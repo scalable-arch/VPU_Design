@@ -1,6 +1,6 @@
 # This file describes a workflow that runs synthesis
 # on a pull request to the main branch
-name: Simulation-Vivado
+name: 10.Simulation-Vivado
 run-name: Run Vivado Simulation (Xilinx) from ${{ github.actor }}
 on:
   pull_request:

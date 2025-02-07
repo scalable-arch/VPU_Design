@@ -11,7 +11,6 @@ module VPU_SRC_PORT_CONTROLLER
     //From REQ_IF.src                            
     input   wire                            rvalid_i,
     input   wire [VPU_PKG::OPERAND_ADDR_WIDTH-1:0]   raddr_i,
-    input   wire                            valid_i,
 
     // From/To VPU_CONTROLLER
     input   wire                            start_i,

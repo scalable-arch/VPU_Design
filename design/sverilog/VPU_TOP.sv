@@ -19,8 +19,9 @@ module VPU_TOP
 );
     import VPU_PKG::*;
 
-    REQ_IF                                  req_if(clk,rst_n); 
-
+    vpu_instr_decoded_t                     instr_decoded;
+    wire                                    ctrl_ready;
+    wire                                    ctrl_valid;
     wire                                    opget_start;
     wire                                    opget_done;
     wire    [DWIDTH_PER_EXEC-1:0]           operand_fifo_rdata[SRAM_R_PORT_CNT];
@@ -41,7 +42,9 @@ module VPU_TOP
         .clk                                (clk),
         .rst_n                              (rst_n),
         .vpu_req_if                         (vpu_req_if),
-        .req_if                             (req_if)
+        .instr_decoded_o                    (instr_decoded),
+        .ctrl_ready_i                       (ctrl_ready),
+        .ctrl_valid_o                       (ctrl_valid)
     );
 
     VPU_CONTROLLER #(
@@ -49,7 +52,9 @@ module VPU_TOP
     ) vpu_controller (   
         .clk                                (clk),
         .rst_n                              (rst_n),
-        .req_if                             (req_if),
+        .ctrl_valid_i                       (ctrl_valid),
+        .ctrl_ready_o                       (ctrl_ready),
+        .instr_decoded_i                    (instr_decoded),
 
         .opget_start_o                      (opget_start),
         .opget_done_i                       (opget_done),
@@ -69,10 +74,9 @@ module VPU_TOP
         .clk                                (clk),
         .rst_n                              (rst_n),
         .start_i                            (exec_start),
-        .op_func_i                          (req_if.op_func),
-        //.delay_i                            (req_if.delay),
+        .op_func_i                          (instr_decoded.op_func),
         .operand_i                          (operand_fifo_rdata),
-        .operand_valid_i                    (req_if.rvalid),
+        .operand_valid_i                    (instr_decoded.rvalid),
         .dout_o                             (wb_data),
         .done_o                             (exec_done)
     );
@@ -82,7 +86,7 @@ module VPU_TOP
     ) vpu_src_port (   
         .clk                                (clk),
         .rst_n                              (rst_n),
-        .req_if                             (req_if),
+        .instr_decoded_i                    (instr_decoded),
         .start_i                            (opget_start),
         .done_o                             (opget_done),
         .operand_fifo_rden_i                (operand_fifo_rden),
@@ -101,7 +105,7 @@ module VPU_TOP
         .done_o                             (wb_done),
         .wb_data_valid_i                    (wb_data_valid),
         .wb_data_i                          (wb_data),
-        .req_if                             (req_if),
+        .instr_decoded_i                    (instr_decoded),
         .vpu_dst0_port_if                   (vpu_dst0_port_if)
     );
 

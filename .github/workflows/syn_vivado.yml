@@ -1,6 +1,6 @@
 # This file describes a workflow that runs synthesis
 # on a pull request to the main branch
-name: Synthesis-Vivado
+name: 20.Synthesis-Vivado
 run-name: Run Vivado Synthesis (Xilinx) from ${{ github.actor }}
 on:
   pull_request:

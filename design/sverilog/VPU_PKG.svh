@@ -12,11 +12,11 @@ package VPU_PKG;
     localparam  ELEM_PER_DIM_CNT            = (DIM_SIZE/ELEM_WIDTH);
 
     /* VPU Instruction Config */
-    localparam  INSTR_WIDTH                 = 136;
+    localparam  INSTR_WIDTH                 = 128;
     localparam  INSTR_NUM                   = 14;
     localparam  OPCODE_WIDTH                = 8;
     localparam  OPERAND_WIDTH               = ELEM_WIDTH;
-    localparam  OPERAND_ADDR_WIDTH          = 32;
+    localparam  OPERAND_ADDR_WIDTH          = 24;
     localparam  SRC_OPERAND_CNT             = 3;
     localparam  SRC_OPERAND_CNT_LG2         = $clog2(SRC_OPERAND_CNT);
     localparam  DST_OPERAND_CNT             = 1;
@@ -103,12 +103,13 @@ package VPU_PKG;
 
     // VPU Instruction
     typedef struct packed {
-        vpu_h2d_req_opcode_t                opcode;      // [135:128]
-        logic   [31:0]                      src2;        // [127:96]
-        logic   [31:0]                      src1;        // [95:64]
-        logic   [31:0]                      src0;        // [63:32]
-        logic   [31:0]                      dst0;        // [31:0]
-    } vpu_h2d_req_instr_t; // 136-bit
+        vpu_h2d_req_opcode_t                opcode;      // [127:120]
+        logic   [23:0]                      dst0;        // [119:96]
+        logic   [23:0]                      src0;        // [95:72]
+        logic   [23:0]                      src1;        // [71:48]
+        logic   [23:0]                      src2;        // [47:24]
+        logic   [23:0]                      imm;         // [23:0]
+    } vpu_h2d_req_instr_t; // 128-bit
 
     typedef struct packed {
         logic                               fp_add_r;
@@ -139,19 +140,31 @@ package VPU_PKG;
         vpu_exec_op_type_t                  op_type;
     } vpu_exec_req_t; // 16-bit
 
+    // VPU Instruction
+    typedef struct packed {
+        logic   [SRAM_R_PORT_CNT-1:0]       rvalid;
+        logic   [OPERAND_ADDR_WIDTH-1:0]    raddr0;
+        logic   [OPERAND_ADDR_WIDTH-1:0]    raddr1;
+        logic   [OPERAND_ADDR_WIDTH-1:0]    raddr2;
+        logic   [OPERAND_ADDR_WIDTH-1:0]    waddr;
+        vpu_exec_req_t                      op_func;
+    } vpu_instr_decoded_t; // 128-bit
+
     function automatic [OPERAND_ADDR_WIDTH-1:0]
                                         get_src_operand(
                                         input vpu_h2d_req_instr_t instr,
                                         input int i
                                         );
-        //get_src_operand                     = {SRAM_BANK_DEPTH_LG2{1'b0}};  // 0 padding
-        get_src_operand                     = instr[(i+1)*(OPERAND_ADDR_WIDTH)+:OPERAND_ADDR_WIDTH];
+        // synopsys translate_off
+        assert(i < SRC_OPERAND_CNT); // i must be lower than src_operand_cnt
+        // synopsys translate_on
+
+        get_src_operand         = instr[(3-i)*(OPERAND_ADDR_WIDTH)+:OPERAND_ADDR_WIDTH];
     endfunction
 
     function automatic [OPERAND_ADDR_WIDTH-1:0]
                                         get_opcode(input vpu_h2d_req_instr_t instr);
-        //get_src_operand                     = {SRAM_BANK_DEPTH_LG2{1'b0}};  // 0 padding
-        get_opcode                          = instr[TOTAL_OPERAND_CNT*(OPERAND_ADDR_WIDTH)+:OPCODE_WIDTH];
+        get_opcode              = instr[(INSTR_WIDTH-1)-:OPCODE_WIDTH];
     endfunction
 
 endpackage /* VPU_PKG */

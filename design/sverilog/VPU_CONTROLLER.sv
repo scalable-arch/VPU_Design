@@ -8,7 +8,9 @@ module VPU_CONTROLLER
     input   wire                            clk,
     input   wire                            rst_n,
 
-    REQ_IF.dst                              req_if,
+    input   wire                            ctrl_valid_i,
+    input   VPU_PKG::vpu_instr_decoded_t    instr_decoded_i,
+    output  wire                            ctrl_ready_o,
     
     // OPGET SubState
     output  wire                            opget_start_o,
@@ -37,7 +39,7 @@ module VPU_CONTROLLER
     logic   [2:0]                           state,  state_n;
 
     logic                                   ready;
-    logic                                   opget_start;
+    logic                                   opget_start, opget_start_n;
     logic                                   exec_start;
     logic                                   wb_start;
     logic                                   wb_data_valid;
@@ -46,16 +48,18 @@ module VPU_CONTROLLER
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             state                           <= S_IDLE;
+            opget_start                     <= 1'b0;
         end else begin
             state                           <= state_n;
+            opget_start                     <= opget_start_n;
         end
     end
     
     always_comb begin
         state_n                             = state;
+        opget_start_n                       = 1'b0;
 
         ready                               = 1'b0;
-        opget_start                         = 1'b0;
         exec_start                          = 1'b0;
         wb_start                            = 1'b0;
         wb_data_valid                       = 1'b0;
@@ -64,8 +68,8 @@ module VPU_CONTROLLER
         case(state)
             S_IDLE: begin
                 ready                       = 1'b1;
-                if(req_if.valid && ready) begin
-                    opget_start             = 1'b1;
+                if(ctrl_valid_i && ctrl_ready_o) begin
+                    opget_start_n           = 1'b1;
                     state_n                 = S_GETOP;
                 end                            
             end
@@ -80,7 +84,7 @@ module VPU_CONTROLLER
 
             S_EXEC_1: begin
                 if(exec_done_i) begin
-                    if(req_if.op_func.op_type == EXEC) begin
+                    if(instr_decoded_i.op_func.op_type == EXEC) begin
                         wb_data_valid       = 1'b1;
                     end
                     operand_queue_rden      = 1'b1;
@@ -107,7 +111,7 @@ module VPU_CONTROLLER
         endcase
     end
 
-    assign  req_if.ready                    = ready;
+    assign  ctrl_ready_o                    = ready;
     assign  opget_start_o                   = opget_start;
     assign  exec_start_o                    = exec_start;
     assign  wb_start_o                      = wb_start;
@@ -115,7 +119,7 @@ module VPU_CONTROLLER
     genvar k;
     generate
         for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : PACKING_OPERAND_QUEUE_RDEN
-            assign operand_queue_rden_o[k]  = (operand_queue_rden & req_if.rvalid[k]);
+            assign operand_queue_rden_o[k]  = (operand_queue_rden & instr_decoded_i.rvalid[k]);
         end
     endgenerate
 
