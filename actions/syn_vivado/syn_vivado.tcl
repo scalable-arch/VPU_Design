@@ -87,9 +87,10 @@ launch_runs synth_1 -jobs 20
 
 wait_on_run synth_1
 
-update_compile_order -fileset sources_1
+open_run synth_1
 
 report_timing_summary -delay_type min_max -report_unconstrained -check_timing_verbose -max_paths 10 -input_pins -routable_nets -file $env(VPU_HOME)/actions/work.syn/vpu_top.timing.rpt
+
 report_utilization -file $env(VPU_HOME)/actions/work.syn/vpu_top.util.rpt -name utilization_1
 
 quit
