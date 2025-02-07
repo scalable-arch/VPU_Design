@@ -33,8 +33,6 @@ module VPU_WB_UNIT
 
     // SRAM_W_PORT_IF
     logic                                   req,        req_n;
-    logic   [SRAM_BANK_CNT_LG2-1:0]         wid,        wid_n;
-    logic   [SRAM_BANK_DEPTH_LG2-1:0]       addr,       addr_n;
     logic                                   web,        web_n;
     logic                                   wlast,      wlast_n;
 
@@ -47,8 +45,6 @@ module VPU_WB_UNIT
         if(!rst_n) begin
             state                           <= S_IDLE;
             req                             <= 1'b0;
-            wid                             <= {SRAM_BANK_CNT_LG2{1'b0}};
-            addr                            <= {SRAM_BANK_DEPTH_LG2{1'b0}};
             web                             <= 1'b1;
             wlast                           <= 1'b0;
             cnt                             <= 1'b0;
@@ -58,8 +54,6 @@ module VPU_WB_UNIT
         end else begin
             state                           <= state_n;
             req                             <= req_n;
-            wid                             <= wid_n;
-            addr                            <= addr_n;
             web                             <= web_n;
             wlast                           <= wlast_n;
             cnt                             <= cnt_n;
@@ -78,8 +72,6 @@ module VPU_WB_UNIT
     always_comb begin
         state_n                             = state;
         req_n                               = req;
-        wid_n                               = wid;
-        addr_n                              = addr;
         web_n                               = web;
         wlast_n                             = wlast;
         cnt_n                               = cnt;
@@ -97,8 +89,6 @@ module VPU_WB_UNIT
                 done                        = 1'b1;
                 if(start_i) begin
                     req_n                   = 1'b1;
-                    wid_n                   = get_bank_id(instr_decoded_i.waddr);
-                    addr_n                  = get_waddr(instr_decoded_i.waddr);
                     web_n                   = 1'b0;
                     wlast_n                 = 1'b1;
                     state_n                 = S_VALID;
@@ -108,8 +98,6 @@ module VPU_WB_UNIT
             S_VALID: begin
                 if(vpu_dst0_port_if.ack && vpu_dst0_port_if.req) begin
                     req_n                   = 1'b0;
-                    wid_n                   = {SRAM_BANK_CNT_LG2{1'b0}};
-                    addr_n                  = {SRAM_BANK_DEPTH_LG2{1'b0}};
                     web_n                   = 1'b1;
                     wlast_n                 = 1'b0;
                     state_n                 = S_IDLE;
@@ -120,8 +108,8 @@ module VPU_WB_UNIT
 
     
     assign  vpu_dst0_port_if.req            = req;
-    assign  vpu_dst0_port_if.wid            = wid;
-    assign  vpu_dst0_port_if.addr           = addr;
+    assign  vpu_dst0_port_if.wid            = get_bank_id(instr_decoded_i.waddr);
+    assign  vpu_dst0_port_if.addr           = get_bank_id(instr_decoded_i.waddr);
     assign  vpu_dst0_port_if.web            = web;
     assign  vpu_dst0_port_if.wlast          = wlast;
     assign  vpu_dst0_port_if.wdata          = wdata;

@@ -10,7 +10,7 @@ set_property -dict [list \
   CONFIG.C_Has_INVALID_OP {true} \
   CONFIG.C_Has_OVERFLOW {true} \
   CONFIG.C_Has_UNDERFLOW {true} \
-  CONFIG.C_Latency {2} \
+  CONFIG.C_Latency {3} \
   CONFIG.C_Mult_Usage {No_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
@@ -60,7 +60,7 @@ set_property -dict [list \
   CONFIG.C_Has_INVALID_OP {true} \
   CONFIG.C_Has_OVERFLOW {true} \
   CONFIG.C_Has_UNDERFLOW {true} \
-  CONFIG.C_Latency {3} \
+  CONFIG.C_Latency {6} \
   CONFIG.C_Mult_Usage {No_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
@@ -84,7 +84,7 @@ set_property -dict [list \
   CONFIG.C_Has_INVALID_OP {true} \
   CONFIG.C_Has_OVERFLOW {true} \
   CONFIG.C_Has_UNDERFLOW {true} \
-  CONFIG.C_Latency {2} \
+  CONFIG.C_Latency {3} \
   CONFIG.C_Mult_Usage {Full_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
@@ -107,7 +107,7 @@ set_property -dict [list \
   CONFIG.C_Accum_Msb {32} \
   CONFIG.C_Has_OVERFLOW {true} \
   CONFIG.C_Has_UNDERFLOW {true} \
-  CONFIG.C_Latency {5} \
+  CONFIG.C_Latency {8} \
   CONFIG.C_Mult_Usage {Medium_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
@@ -129,7 +129,7 @@ set_property -dict [list \
   CONFIG.C_Accum_Lsb {-31} \
   CONFIG.C_Accum_Msb {32} \
   CONFIG.C_Has_INVALID_OP {true} \
-  CONFIG.C_Latency {2} \
+  CONFIG.C_Latency {5} \
   CONFIG.C_Mult_Usage {No_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
