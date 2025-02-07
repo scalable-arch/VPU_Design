@@ -18,5 +18,4 @@ ${VPU_HOME}/design/sverilog/VPU_FP_ADD_SUB.sv
 ${VPU_HOME}/design/sverilog/VPU_EXEC_UNIT.sv
 ${VPU_HOME}/design/sverilog/VPU_DECODER.sv
 ${VPU_HOME}/design/sverilog/VPU_CONTROLLER.sv
-${VPU_HOME}/design/sverilog/VPU_CNTR.sv
 ${VPU_HOME}/design/sverilog/VPU_WB_UNIT.sv

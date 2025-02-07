@@ -10,7 +10,7 @@ set_property -dict [list \
   CONFIG.C_Has_INVALID_OP {true} \
   CONFIG.C_Has_OVERFLOW {true} \
   CONFIG.C_Has_UNDERFLOW {true} \
-  CONFIG.C_Latency {2} \
+  CONFIG.C_Latency {3} \
   CONFIG.C_Mult_Usage {No_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
@@ -20,10 +20,7 @@ set_property -dict [list \
   CONFIG.Maximum_Latency {false} \
   CONFIG.Result_Precision_Type {Custom} \
 ] [get_ips floating_point_add_sub]
-# generate_target {instantiation_template} [get_files /home/rhgksdma/VPU_Design/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
-# update_compile_order -fileset sources_1
-# generate_target all [get_files /home/rhgksdma/VPU_Design/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
-# export_ip_user_files -of_objects [get_files /home/rhgksdma/VPU_Design/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci] -no_script -sync -force -quiet
+
 # floating_point_cmp
 create_ip -name floating_point -vendor xilinx.com -library ip -version 7.1 -module_name floating_point_cmp
 set_property -dict [list \
@@ -60,7 +57,7 @@ set_property -dict [list \
   CONFIG.C_Has_INVALID_OP {true} \
   CONFIG.C_Has_OVERFLOW {true} \
   CONFIG.C_Has_UNDERFLOW {true} \
-  CONFIG.C_Latency {3} \
+  CONFIG.C_Latency {6} \
   CONFIG.C_Mult_Usage {No_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
@@ -84,7 +81,7 @@ set_property -dict [list \
   CONFIG.C_Has_INVALID_OP {true} \
   CONFIG.C_Has_OVERFLOW {true} \
   CONFIG.C_Has_UNDERFLOW {true} \
-  CONFIG.C_Latency {2} \
+  CONFIG.C_Latency {3} \
   CONFIG.C_Mult_Usage {Full_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
@@ -107,7 +104,7 @@ set_property -dict [list \
   CONFIG.C_Accum_Msb {32} \
   CONFIG.C_Has_OVERFLOW {true} \
   CONFIG.C_Has_UNDERFLOW {true} \
-  CONFIG.C_Latency {5} \
+  CONFIG.C_Latency {8} \
   CONFIG.C_Mult_Usage {Medium_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \
@@ -129,7 +126,7 @@ set_property -dict [list \
   CONFIG.C_Accum_Lsb {-31} \
   CONFIG.C_Accum_Msb {32} \
   CONFIG.C_Has_INVALID_OP {true} \
-  CONFIG.C_Latency {2} \
+  CONFIG.C_Latency {5} \
   CONFIG.C_Mult_Usage {No_Usage} \
   CONFIG.C_Rate {1} \
   CONFIG.C_Result_Exponent_Width {8} \

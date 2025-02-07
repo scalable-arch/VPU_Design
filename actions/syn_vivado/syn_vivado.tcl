@@ -81,11 +81,16 @@ set_property SOURCE_SET sources_1 [get_filesets sim_1]
 set_property include_dirs $search_path [get_filesets sim_1]
 set_property top VPU_TOP_WRAPPER [get_filesets sim_1]
 set_property target_constrs_file $env(VPU_HOME)/syn/constraint_1.xdc [current_fileset -constrset]
-synth_design -top $env(DESIGN_TOP) -part xcvh1582-vsva3697-2MP-e-S
 
-update_compile_order -fileset sources_1
+#synth_design -top $env(DESIGN_TOP) -part xcvh1582-vsva3697-2MP-e-S
+launch_runs synth_1 -jobs 20
+
+wait_on_run synth_1
+
+open_run synth_1
 
 report_timing_summary -delay_type min_max -report_unconstrained -check_timing_verbose -max_paths 10 -input_pins -routable_nets -file $env(VPU_HOME)/actions/work.syn/vpu_top.timing.rpt
+
 report_utilization -file $env(VPU_HOME)/actions/work.syn/vpu_top.util.rpt -name utilization_1
 
 quit
