@@ -28,6 +28,12 @@ module VPU_FP_MAX
     logic   [OPERAND_WIDTH-1:0]             op_1_temp;
     logic   [OPERAND_WIDTH-1:0]             op_2_temp;
 
+    logic                                   result_0_data_buff;
+    logic  [3:0]                            result_0_data, result_1_data;
+    wire                                    result_0_valid, result_1_valid;
+    logic   [OPERAND_WIDTH-1:0]             result;
+    logic                                   done;
+    
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             op_0_temp                       <= {OPERAND_WIDTH{1'b0}};
@@ -42,9 +48,6 @@ module VPU_FP_MAX
         end
     end
 
-
-    logic                                   result_0_data_buff;
-   
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             result_0_data_buff              <= 1'b0;
@@ -53,13 +56,7 @@ module VPU_FP_MAX
             result_0_data_buff              <= result_0_data[0];
         end
     end
-    
-    
-    logic  [3:0]                            result_0_data, result_1_data;
-    wire                                    result_0_valid, result_1_valid;
-    logic   [OPERAND_WIDTH-1:0]             result;
-    logic                                   done;
-    
+
     always_comb begin
        if(op_valid[SRAM_R_PORT_CNT-1]) begin
             result                          = result_1_data[0] ? (result_0_data_buff ? op_0_temp : op_1_temp) : op_2_temp;
