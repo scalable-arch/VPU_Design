@@ -74,10 +74,10 @@ module VPU_TOP_WRAPPER (
 
     // VPU_SRC_PORT_IF
     VPU_SRC_PORT_IF vpu_src2_port_if (.clk(clk), .rst_n(rst_n));
-    
-    assign  vpu_src2_port_if.rdata           = rdata_i[2];
-    assign  vpu_src2_port_if.rvalid          = rvalid_i[(2*SRAM_DATA_WIDTH)+:SRAM_DATA_WIDTH];
+
     assign  vpu_src2_port_if.ack             = rack_i[2];
+    assign  vpu_src2_port_if.rdata           = rdata_i[(2*SRAM_DATA_WIDTH)+:SRAM_DATA_WIDTH];
+    assign  vpu_src2_port_if.rvalid          = rvalid_i[2];
     assign  rreq_o[2]                        = vpu_src2_port_if.req;
     assign  rid_o[(2*SRAM_BANK_CNT_LG2)+:SRAM_BANK_CNT_LG2] = vpu_src2_port_if.rid;
     assign  raddr_o[(2*SRAM_BANK_DEPTH_LG2)+:SRAM_BANK_DEPTH_LG2] = vpu_src2_port_if.addr;
