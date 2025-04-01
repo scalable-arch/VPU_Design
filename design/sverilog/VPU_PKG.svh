@@ -112,16 +112,20 @@ package VPU_PKG;
     } vpu_h2d_req_instr_t; // 128-bit
 
     typedef struct packed {
-        logic                               fp_add_r;
+        logic                               fp_add2_r; // MSB
+        logic                               fp_add3_r;
         logic                               fp_sub_r;
         logic                               fp_mul_r;
         logic                               fp_div_r;
         logic                               fp_sqrt_r;
         logic                               fp_exp_r;
         logic                               fp_recip_r;
+        logic                               fp_max2_r;
+        logic                               fp_max3_r;
+        logic                               fp_avg2_r;
+        logic                               fp_avg3_r;
         logic                               fp_max_r;
-        logic                               fp_avg_r;
-        logic                               fp_red_r;
+        logic                               fp_sum_r; //LSB
     } vpu_exec_fp_op_req_t; // 10-bit
 
     typedef struct packed {
@@ -136,7 +140,7 @@ package VPU_PKG;
 
     typedef struct packed {
         vpu_exec_fp_op_req_t                fp_req;
-        vpu_exec_red_op_req_t               red_req;
+        //vpu_exec_red_op_req_t               red_req;
         vpu_exec_op_type_t                  op_type;
     } vpu_exec_req_t; // 16-bit
 

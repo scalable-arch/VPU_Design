@@ -6,35 +6,45 @@ module VPU_TOP_WRAPPER (
 
     // VPU_REQ_IF
     // REQ from/to Host
-    output                                  ready_o,
-    input   VPU_PKG::vpu_h2d_req_instr_t    h2d_req_instr_i,
-    input                                   valid_i,
+    output  wire                                ready_o,
+    input   wire    [7:0]                           opcode,
+    input   wire    [23:0]                          dst0,
+    input   wire    [23:0]                          src0,
+    input   wire    [23:0]                          src1,
+    input   wire    [23:0]                          src2,
+    input   wire    [23:0]                          imm,
+    input   wire                                valid_i,
 
     // VPU_SRC_PORT_IF
-    output  [SRAM_R_PORT_CNT-1:0]           rreq_o,
-    output  [SRAM_BANK_CNT_LG2-1:0]         rid_o     [SRAM_R_PORT_CNT],
-    output  [SRAM_BANK_DEPTH_LG2-1:0]       raddr_o    [SRAM_R_PORT_CNT],
-    output  [SRAM_R_PORT_CNT-1:0]           reb_o,
-    output  [SRAM_R_PORT_CNT-1:0]           rlast_o,
-
-    input   [SRAM_R_PORT_CNT-1:0]           rack_i,
-    input   [SRAM_DATA_WIDTH-1:0]           rdata_i   [SRAM_R_PORT_CNT],
-    input   [SRAM_R_PORT_CNT-1:0]           rvalid_i,
+    output  wire  [SRAM_R_PORT_CNT-1:0]           rreq_o,
+    output  wire  [(SRAM_BANK_CNT_LG2*SRAM_R_PORT_CNT)-1:0]   rid_o,
+    output  wire  [(SRAM_BANK_DEPTH_LG2*SRAM_R_PORT_CNT)-1:0] raddr_o,
+    output  wire  [SRAM_R_PORT_CNT-1:0]           reb_o,
+    output  wire  [SRAM_R_PORT_CNT-1:0]           rlast_o,
+    input   wire  [SRAM_R_PORT_CNT-1:0]           rack_i,
+    input   wire  [(SRAM_DATA_WIDTH*SRAM_R_PORT_CNT)-1:0] rdata_i,
+    input   wire  [SRAM_R_PORT_CNT-1:0]           rvalid_i,
 
     // VPU_DST_PORT_IF
-    output                                  wreq_o,
-    output  [SRAM_BANK_CNT_LG2-1:0]         wid_o,
-    output  [SRAM_BANK_DEPTH_LG2-1:0]       waddr_o,
-    output                                  web_o,
-    output                                  wlast_o,
-    output  [SRAM_DATA_WIDTH-1:0]           wdata_o,
-
-    input                                   wack_i
+    output  wire                                 wreq_o,
+    output  wire [SRAM_BANK_CNT_LG2-1:0]         wid_o,
+    output  wire [SRAM_BANK_DEPTH_LG2-1:0]       waddr_o,
+    output  wire                                 web_o,
+    output  wire                                 wlast_o,
+    output  wire [SRAM_DATA_WIDTH-1:0]           wdata_o,
+    input   wire                                 wack_i
 );
     // VPU_REQ_IF
     VPU_REQ_IF  vpu_req_if  (.clk(clk), .rst_n(rst_n));
+    vpu_h2d_req_instr_t                     h2d_req_instr;
+    assign  h2d_req_instr.opcode            = vpu_h2d_req_opcode_t'(opcode);
+    assign  h2d_req_instr.dst0              = dst0;
+    assign  h2d_req_instr.src0              = src0;
+    assign  h2d_req_instr.src1              = src1;
+    assign  h2d_req_instr.src2              = src2;
+    assign  h2d_req_instr.imm               = imm;
 
-    assign  vpu_req_if.h2d_req_instr        = h2d_req_instr_i;
+    assign  vpu_req_if.h2d_req_instr        = h2d_req_instr;
     assign  vpu_req_if.valid                = valid_i;
     assign  ready_o                         = vpu_req_if.ready;
 
@@ -42,11 +52,11 @@ module VPU_TOP_WRAPPER (
     VPU_SRC_PORT_IF vpu_src0_port_if (.clk(clk), .rst_n(rst_n));
     
     assign  vpu_src0_port_if.ack             = rack_i[0];
-    assign  vpu_src0_port_if.rdata           = rdata_i[0];
+    assign  vpu_src0_port_if.rdata           = rdata_i[(0*SRAM_DATA_WIDTH)+:SRAM_DATA_WIDTH];
     assign  vpu_src0_port_if.rvalid          = rvalid_i[0];
     assign  rreq_o[0]                        = vpu_src0_port_if.req;
-    assign  rid_o[0]                         = vpu_src0_port_if.rid;
-    assign  raddr_o[0]                       = vpu_src0_port_if.addr;
+    assign  rid_o[(0*SRAM_BANK_CNT_LG2)+:SRAM_BANK_CNT_LG2] = vpu_src0_port_if.rid;
+    assign  raddr_o[(0*SRAM_BANK_DEPTH_LG2)+:SRAM_BANK_DEPTH_LG2] = vpu_src0_port_if.addr;
     assign  reb_o[0]                         = vpu_src0_port_if.reb;
     assign  rlast_o[0]                       = vpu_src0_port_if.rlast;
 
@@ -54,11 +64,11 @@ module VPU_TOP_WRAPPER (
     VPU_SRC_PORT_IF vpu_src1_port_if (.clk(clk), .rst_n(rst_n));
     
     assign  vpu_src1_port_if.ack             = rack_i[1];
-    assign  vpu_src1_port_if.rdata           = rdata_i[1];
+    assign  vpu_src1_port_if.rdata           = rdata_i[(1*SRAM_DATA_WIDTH)+:SRAM_DATA_WIDTH];
     assign  vpu_src1_port_if.rvalid          = rvalid_i[1];
     assign  rreq_o[1]                        = vpu_src1_port_if.req;
-    assign  rid_o[1]                         = vpu_src1_port_if.rid;
-    assign  raddr_o[1]                       = vpu_src1_port_if.addr;
+    assign  rid_o[(1*SRAM_BANK_CNT_LG2)+:SRAM_BANK_CNT_LG2] = vpu_src1_port_if.rid;
+    assign  raddr_o[(1*SRAM_BANK_DEPTH_LG2)+:SRAM_BANK_DEPTH_LG2] = vpu_src1_port_if.addr;
     assign  reb_o[1]                         = vpu_src1_port_if.reb;
     assign  rlast_o[1]                       = vpu_src1_port_if.rlast;
 
@@ -66,11 +76,11 @@ module VPU_TOP_WRAPPER (
     VPU_SRC_PORT_IF vpu_src2_port_if (.clk(clk), .rst_n(rst_n));
     
     assign  vpu_src2_port_if.rdata           = rdata_i[2];
-    assign  vpu_src2_port_if.rvalid          = rvalid_i[2];
+    assign  vpu_src2_port_if.rvalid          = rvalid_i[(2*SRAM_DATA_WIDTH)+:SRAM_DATA_WIDTH];
     assign  vpu_src2_port_if.ack             = rack_i[2];
     assign  rreq_o[2]                        = vpu_src2_port_if.req;
-    assign  rid_o[2]                         = vpu_src2_port_if.rid;
-    assign  raddr_o[2]                       = vpu_src2_port_if.addr;
+    assign  rid_o[(2*SRAM_BANK_CNT_LG2)+:SRAM_BANK_CNT_LG2] = vpu_src2_port_if.rid;
+    assign  raddr_o[(2*SRAM_BANK_DEPTH_LG2)+:SRAM_BANK_DEPTH_LG2] = vpu_src2_port_if.addr;
     assign  reb_o[2]                         = vpu_src2_port_if.reb;
     assign  rlast_o[2]                       = vpu_src2_port_if.rlast;
 
@@ -92,10 +102,10 @@ module VPU_TOP_WRAPPER (
     (
         .clk                                (clk),
         .rst_n                              (rst_n),
-        .vpu_req_if                         (vpu_req_if),
-        .vpu_src0_port_if                   (vpu_src0_port_if),
-        .vpu_src1_port_if                   (vpu_src1_port_if),
-        .vpu_src2_port_if                   (vpu_src2_port_if),
-        .vpu_dst0_port_if                   (vpu_dst0_port_if)
+        .vpu_req_if                         (vpu_req_if.device),
+        .vpu_src0_port_if                   (vpu_src0_port_if.host),
+        .vpu_src1_port_if                   (vpu_src1_port_if.host),
+        .vpu_src2_port_if                   (vpu_src2_port_if.host),
+        .vpu_dst0_port_if                   (vpu_dst0_port_if.host)
     );
 endmodule

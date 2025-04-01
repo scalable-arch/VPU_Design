@@ -24,7 +24,7 @@ module VPU_FP_DIV
     
     logic   [OPERAND_WIDTH-1:0]             result;
     
-    
+    (* black_box *)
     floating_point_div fp_div_0 (
         .aclk                               (clk),
         .s_axis_a_tvalid                    (start_i),

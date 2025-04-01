@@ -25,6 +25,7 @@ module VPU_FP_EXP
     logic   [(OPERAND_WIDTH*2)-1:0]         extended_op_0;
     assign  extended_op_0                   = {{op_0},{16{1'b0}}};
     
+    (* black_box *)
     floating_point_exp fp_exp_0 (
         .aclk                               (clk),
         .s_axis_a_tvalid                    (start_i),

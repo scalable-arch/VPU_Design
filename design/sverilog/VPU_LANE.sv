@@ -23,28 +23,37 @@ module VPU_LANE
     logic    [OPERAND_WIDTH-1:0]            dout; 
     logic                                   done;   
     
-    wire     [OPERAND_WIDTH-1:0]            fp_add_sub_dout;
+    wire     [OPERAND_WIDTH-1:0]            fp_add2_dout;
+    wire     [OPERAND_WIDTH-1:0]            fp_add3_dout;
     wire     [OPERAND_WIDTH-1:0]            fp_mul_dout;
     wire     [OPERAND_WIDTH-1:0]            fp_div_dout;
-    wire     [OPERAND_WIDTH-1:0]            fp_max_dout;
-    wire     [OPERAND_WIDTH-1:0]            fp_avg_dout;
+    wire     [OPERAND_WIDTH-1:0]            fp_max2_dout;
+    wire     [OPERAND_WIDTH-1:0]            fp_max3_dout;
+    wire     [OPERAND_WIDTH-1:0]            fp_avg2_dout;
+    wire     [OPERAND_WIDTH-1:0]            fp_avg3_dout;
     wire     [OPERAND_WIDTH-1:0]            fp_sqrt_dout;
     wire     [OPERAND_WIDTH-1:0]            fp_exp_dout;
     wire     [OPERAND_WIDTH-1:0]            fp_recip_dout;
     
-    wire                                    fp_add_sub_done;
+    wire                                    fp_add2_done;
+    wire                                    fp_add3_done;
     wire                                    fp_mul_done;
     wire                                    fp_div_done;
-    wire                                    fp_max_done;
-    wire                                    fp_avg_done;
+    wire                                    fp_max2_done;
+    wire                                    fp_max3_done;
+    wire                                    fp_avg2_done;
+    wire                                    fp_avg3_done;
     wire                                    fp_sqrt_done;
     wire                                    fp_exp_done;
     wire                                    fp_recip_done;
     
     always_comb begin
-        if((op_func_i.fp_req.fp_add_r) || (op_func_i.fp_req.fp_sub_r)) begin
-            dout                            = fp_add_sub_dout;
-            done                            = fp_add_sub_done;
+        if((op_func_i.fp_req.fp_add2_r) || (op_func_i.fp_req.fp_sub_r)) begin
+            dout                            = fp_add2_dout;
+            done                            = fp_add2_done;
+        end else if(op_func_i.fp_req.fp_add3_r) begin
+            dout                            = fp_add3_dout;
+            done                            = fp_add3_done;
         end
         else if((op_func_i.fp_req.fp_mul_r)) begin
             dout                            = fp_mul_dout;
@@ -54,13 +63,21 @@ module VPU_LANE
             dout                            = fp_div_dout;
             done                            = fp_div_done;
         end
-        else if((op_func_i.fp_req.fp_max_r)) begin
-            dout                            = fp_max_dout;
-            done                            = fp_max_done;
+        else if((op_func_i.fp_req.fp_max2_r)) begin
+            dout                            = fp_max2_dout;
+            done                            = fp_max2_done;
         end
-        else if((op_func_i.fp_req.fp_avg_r)) begin
-            dout                            = fp_avg_dout;
-            done                            = fp_avg_done;
+        else if((op_func_i.fp_req.fp_max3_r)) begin
+            dout                            = fp_max3_dout;
+            done                            = fp_max3_done;
+        end
+        else if((op_func_i.fp_req.fp_avg2_r)) begin
+            dout                            = fp_avg2_dout;
+            done                            = fp_avg2_done;
+        end
+        else if((op_func_i.fp_req.fp_avg3_r)) begin
+            dout                            = fp_avg3_dout;
+            done                            = fp_avg3_done;
         end
         else if((op_func_i.fp_req.fp_sqrt_r)) begin
             dout                            = fp_sqrt_dout;
@@ -81,21 +98,33 @@ module VPU_LANE
     end
 
     //----------------------------------------------
-    // FP_ADD/SUB
+    // FP_ADD2
     //----------------------------------------------
-    VPU_FP_ADD_SUB # (
-    ) fp_add_sub (
+    VPU_FP_ADD2 # (
+    ) fp_add2 (
         .clk                                (clk),
         .rst_n                              (rst_n),
-        .op_0                               (operand_i[0]),
-        .op_1                               (operand_i[1]),
-        .op_2                               (operand_i[2]),
-        .start_i                            (start_i & (op_func_i.fp_req.fp_add_r | op_func_i.fp_req.fp_sub_r)),
-        .op_valid                           (operand_valid_i),
-        .sub_n                              (!op_func_i.fp_req.fp_sub_r),
-        //.en                                 (op_func_i.fp_req.fp_add_r | op_func_i.fp_req.fp_sub_r),
-        .result_o                           (fp_add_sub_dout),
-        .done_o                             (fp_add_sub_done)
+        .operand_0                          (operand_i[0]),
+        .operand_1                          (operand_i[1]),
+        .start_i                            (start_i & (op_func_i.fp_req.fp_add2_r | op_func_i.fp_req.fp_sub_r)),
+        .sub                                (op_func_i.fp_req.fp_sub_r),
+        .result_o                           (fp_add2_dout),
+        .done_o                             (fp_add2_done)
+    );
+
+    //----------------------------------------------
+    // FP_ADD3
+    //----------------------------------------------
+    VPU_FP_ADD3 # (
+    ) fp_add3 (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+        .operand_0                          (operand_i[0]),
+        .operand_1                          (operand_i[1]),
+        .operand_2                          (operand_i[2]),
+        .start_i                            (start_i & (op_func_i.fp_req.fp_add3_r)),
+        .result_o                           (fp_add3_dout),
+        .done_o                             (fp_add3_done)
     );
 
     //----------------------------------------------
@@ -108,7 +137,6 @@ module VPU_LANE
         .op_0                               (operand_i[0]),
         .op_1                               (operand_i[1]),
         .start_i                            (start_i & op_func_i.fp_req.fp_mul_r),
-        //.en                                 (op_func_i.fp_req.fp_mul_r),
         .result_o                           (fp_mul_dout),
         .done_o                             (fp_mul_done)
     );
@@ -123,45 +151,66 @@ module VPU_LANE
         .op_0                               (operand_i[0]),
         .op_1                               (operand_i[1]),
         .start_i                            (start_i & op_func_i.fp_req.fp_div_r),
-        //.en                                 (op_func_i.fp_req.fp_div_r),
         .result_o                           (fp_div_dout),
         .done_o                             (fp_div_done)
     );
 
     //----------------------------------------------
-    // FP_MAX
+    // FP_MAX2
     //----------------------------------------------
-    VPU_FP_MAX # (
-    ) fp_max (
+    VPU_FP_MAX2 # (
+    ) fp_max2 (
         .clk                                (clk),
         .rst_n                              (rst_n),
-        .op_0                               (operand_i[0]),
-        .op_1                               (operand_i[1]),
-        .op_2                               (operand_i[2]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_max_r),
-        .op_valid                           (operand_valid_i),
-
-        //.en                                 (op_func_i.fp_req.fp_max_r),
-        .result_o                           (fp_max_dout),
-        .done_o                             (fp_max_done)
+        .operand_0                          (operand_i[0]),
+        .operand_1                          (operand_i[1]),
+        .start_i                            (start_i & op_func_i.fp_req.fp_max2_r),
+        .result_o                           (fp_max2_dout),
+        .done_o                             (fp_max2_done)
     );
 
     //----------------------------------------------
-    // FP_AVG
+    // FP_MAX3
     //----------------------------------------------
-    VPU_FP_AVG # (
-    ) fp_avg (
+    VPU_FP_MAX3 # (
+    ) fp_max3 (
         .clk                                (clk),
         .rst_n                              (rst_n),
-        .op_0                               (operand_i[0]),
-        .op_1                               (operand_i[1]),
-        .op_2                               (operand_i[2]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_avg_r),
-        .op_valid                           (operand_valid_i),
+        .operand_0                          (operand_i[0]),
+        .operand_1                          (operand_i[1]),
+        .operand_2                          (operand_i[2]),
+        .start_i                            (start_i & op_func_i.fp_req.fp_max3_r),
+        .result_o                           (fp_max3_dout),
+        .done_o                             (fp_max3_done)
+    );
 
-        //.en                                 (op_func_i.fp_req.fp_max_r),
-        .result_o                           (fp_avg_dout),
-        .done_o                             (fp_avg_done)
+    //----------------------------------------------
+    // FP_AVG2
+    //----------------------------------------------
+    VPU_FP_AVG2 # (
+    ) fp_avg2 (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+        .operand_0                          (operand_i[0]),
+        .operand_1                          (operand_i[1]),
+        .start_i                            (start_i & op_func_i.fp_req.fp_avg2_r),
+        .result_o                           (fp_avg2_dout),
+        .done_o                             (fp_avg2_done)
+    );
+
+    //----------------------------------------------
+    // FP_AVG3
+    //----------------------------------------------
+    VPU_FP_AVG3 # (
+    ) fp_avg3 (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+        .operand_0                          (operand_i[0]),
+        .operand_1                          (operand_i[1]),
+        .operand_2                          (operand_i[2]),
+        .start_i                            (start_i & op_func_i.fp_req.fp_avg3_r),
+        .result_o                           (fp_avg3_dout),
+        .done_o                             (fp_avg3_done)
     );
 
     //----------------------------------------------
@@ -176,7 +225,7 @@ module VPU_LANE
         .result_o                           (fp_sqrt_dout),
         .done_o                             (fp_sqrt_done)
     );
-    
+
     //----------------------------------------------
     // FP_EXP
     //----------------------------------------------
@@ -189,7 +238,7 @@ module VPU_LANE
         .result_o                           (fp_exp_dout),
         .done_o                             (fp_exp_done)
     );
-    
+
     //----------------------------------------------
     // FP_RECIP
     //----------------------------------------------
