@@ -37,18 +37,17 @@ module VPU_REDUCTION_UNIT
     wire                                            fp_max_done;
 
     logic   [OPERAND_WIDTH-1:0]                     buff;
-    logic   [EXEC_CNT_LG2-1:0]                      cnt, cnt_n;
-    logic   [EXEC_CNT_LG2-1:0]                      stage, stage_n;
+    logic   [EXEC_CNT_LG2:0]                        stage, stage_n;
     logic   [MAX_DELAY_LG2-1:0]                     delay;
 
     always_comb begin
-        if(op_func_i.red_req.fp_sum_r) begin
-            if(stage == 'd0)
+        if(op_func_i.fp_req.fp_sum_r) begin
+            if(stage == 'd1)
                 done                                = fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2];
             else    
                 done                                = fp_sum_done;
         end else begin
-            if(stage == 'd0)
+            if(stage == 'd1)
                 done                                = fp_max_itmd_done[ELEM_CNT_PER_EXEC-2];
             else 
                 done                                = fp_max_done;
@@ -57,11 +56,11 @@ module VPU_REDUCTION_UNIT
 
     always_ff @(posedge clk) begin
         if(!rst_n) begin
-            stage                                   <= {EXEC_CNT_LG2{1'b0}};
+            stage                                   <= {(EXEC_CNT_LG2+1){1'b0}};
             buff                                    <= {OPERAND_WIDTH{1'b0}};
         end else begin
             stage                                   <= stage_n;
-            if(done && (stage == 'd0)) begin
+            if(done && (stage == 'd1)) begin
                 buff                                <= itmd_dout;
             end
         end
@@ -69,31 +68,13 @@ module VPU_REDUCTION_UNIT
 
     always_comb begin
         stage_n                                     = stage;
-        if(done) begin
-            if(stage == EXEC_CNT-1) begin
-                stage_n                             = {EXEC_CNT_LG2{1'b0}};
-            end else begin
-                stage_n                             = stage + 'd1;
-            end
+        if(start_i) begin
+            stage_n                                 = stage + 'd1;
+        end else if(done) begin
+            if(stage == EXEC_CNT)
+                stage_n                             = {(EXEC_CNT_LG2+1){1'b0}};
         end
     end
-    
-    //always_comb begin
-    //    delay                                       = delay_i;
-    //    if(stage_n == EXEC_CNT-1) begin
-    //        delay                                   = delay_i + op_func_i.red_req.sub_delay;
-    //    end
-    //end
-
-    //VPU_CNTR # (
-    //    .MAX_DELAY_LG2                          (MAX_DELAY_LG2)
-    //) VPU_CNTR (
-    //    .clk                                    (clk),
-    //    .rst_n                                  (rst_n),
-    //    .count                                  (delay),
-    //    .start_i                                (start_i),
-    //    .done_o                                 (done)
-    //);
 
     genvar j,i;
     generate
@@ -103,17 +84,14 @@ module VPU_REDUCTION_UNIT
                     //----------------------------------------------
                     // FP_SUM
                     //----------------------------------------------
-                    VPU_FP_ADD_SUB # (
-                    ) fp_add_sub (
+                    VPU_FP_ADD2 # (
+                    ) fp_add2 (
                         .clk                        (clk),
                         .rst_n                      (rst_n),
-                        .op_0                       (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
-                        .op_1                       (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .start_i                    (start_i & op_func_i.red_req.fp_sum_r),
-                        .sub_n                      (1'b1),
-                        //.en                         (op_func_i.red_req.fp_sum_r),
+                        .operand_0                  (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
+                        .operand_1                  (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
+                        .start_i                    (start_i & op_func_i.fp_req.fp_sum_r),
+                        .sub                        (1'b0),
                         .result_o                   (fp_sum_itmd_res[i]),
                         .done_o                     (fp_sum_itmd_done[i])
                     );    
@@ -121,16 +99,13 @@ module VPU_REDUCTION_UNIT
                     //----------------------------------------------
                     // FP_MAX
                     //----------------------------------------------
-                    VPU_FP_MAX # (
-                    ) fp_max (
+                    VPU_FP_MAX2 # (
+                    ) fp_max2 (
                         .clk                        (clk),
                         .rst_n                      (rst_n),
-                        .op_0                       (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
-                        .op_1                       (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
-                        .start_i                    (start_i & op_func_i.red_req.fp_max_r),
-                        //.en                         (op_func_i.red_req.fp_max_r),
+                        .operand_0                  (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
+                        .operand_1                  (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
+                        .start_i                    (start_i & op_func_i.fp_req.fp_max_r),
                         .result_o                   (fp_max_itmd_res[i]),
                         .done_o                     (fp_max_itmd_done[i])
                     );
@@ -141,17 +116,14 @@ module VPU_REDUCTION_UNIT
                     //----------------------------------------------
                     // FP_SUM
                     //----------------------------------------------
-                    VPU_FP_ADD_SUB # (
-                    ) fp_add_sub (
+                    VPU_FP_ADD2 # (
+                    ) fp_add2 (
                         .clk                        (clk),
                         .rst_n                      (rst_n),
-                        .op_0                       (fp_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+0]),
-                        .op_1                       (fp_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+1]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
+                        .operand_0                  (fp_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+0]),
+                        .operand_1                  (fp_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+1]),
                         .start_i                    (fp_sum_itmd_done[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2]),
-                        .sub_n                      (1'b1),
-                        //.en                         (1'b1),
+                        .sub                        (1'b0),
                         .result_o                   (fp_sum_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j))+i]),
                         .done_o                     (fp_sum_itmd_done[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j))+i])
                     );
@@ -159,16 +131,13 @@ module VPU_REDUCTION_UNIT
                     //----------------------------------------------
                     // FP_MAX
                     //----------------------------------------------
-                    VPU_FP_MAX # (
-                    ) fp_max (
+                    VPU_FP_MAX2 # (
+                    ) fp_max2 (
                         .clk                        (clk),
                         .rst_n                      (rst_n),
-                        .op_0                       (fp_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+0]),
-                        .op_1                       (fp_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+1]),
-                        .op_2                       (),
-                        .op_valid                   (3'b011),
+                        .operand_0                  (fp_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+0]),
+                        .operand_1                  (fp_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2+1]),
                         .start_i                    (fp_max_itmd_done[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j+1))+i*2]),
-                        //.en                         (1'b1),
                         .result_o                   (fp_max_itmd_res[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j))+i]),
                         .done_o                     (fp_max_itmd_done[ELEM_CNT_PER_EXEC-(1<<(HEIGHT-j))+i])
                     );
@@ -180,43 +149,36 @@ module VPU_REDUCTION_UNIT
     //----------------------------------------------
     // Leaf Level Reduction
     //----------------------------------------------
-    VPU_FP_ADD_SUB # (
-    ) ll_fp_add_sub (
+    VPU_FP_ADD2 # (
+    ) ll_fp_add2 (
         .clk                                        (clk),
         .rst_n                                      (rst_n),
-        .op_0                                       (buff),
-        .op_1                                       (itmd_dout),
-        .op_2                                       (),
-        .op_valid                                   (3'b011),
-        .start_i                                    ((stage == EXEC_CNT-1) && fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2]),
-        .sub_n                                      (1'b1),
-        //.en                                         (op_func_i.red_req.fp_sum_r),
+        .operand_0                                  (buff),
+        .operand_1                                  (itmd_dout),
+        .start_i                                    ((stage == EXEC_CNT) && fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2]),
+        .sub                                        (1'b0),
         .result_o                                   (fp_sum_res),
         .done_o                                     (fp_sum_done)
     );
     
-    VPU_FP_MAX # (
-    ) ll_fp_max (
+    VPU_FP_MAX2 # (
+    ) ll_fp_max2 (
         .clk                                        (clk),
         .rst_n                                      (rst_n),
-        .op_0                                       (buff),
-        .op_1                                       (itmd_dout),
-        .op_2                                       (),
-        .op_valid                                   (3'b011),
-        .start_i                                    ((stage == EXEC_CNT-1) && fp_max_itmd_done[ELEM_CNT_PER_EXEC-2]),
-        //.en                                         (op_func_i.red_req.fp_max_r),
+        .operand_0                                  (buff),
+        .operand_1                                  (itmd_dout),
+        .start_i                                    ((stage == EXEC_CNT) && fp_max_itmd_done[ELEM_CNT_PER_EXEC-2]),
         .result_o                                   (fp_max_res),
         .done_o                                     (fp_max_done)
     );
 
-
     always_comb begin
-        if(op_func_i.red_req.fp_sum_r) begin
+        if(op_func_i.fp_req.fp_sum_r) begin
             itmd_dout                               = fp_sum_itmd_res[ELEM_CNT_PER_EXEC-2];
             dout                                    = fp_sum_res;
            
         end
-        else if(op_func_i.red_req.fp_max_r) begin
+        else if(op_func_i.fp_req.fp_max_r) begin
             itmd_dout                               = fp_max_itmd_res[ELEM_CNT_PER_EXEC-2];
             dout                                    = fp_max_res;
             

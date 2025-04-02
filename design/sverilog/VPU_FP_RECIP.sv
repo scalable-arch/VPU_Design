@@ -24,6 +24,7 @@ module VPU_FP_RECIP
     logic   [OPERAND_WIDTH-1:0]             result, result_valid;
     wire                                    done;
     
+    (* black_box *)
     floating_point_sqrt fp_sqrt_0 (
         .aclk                               (clk),
         .s_axis_a_tvalid                    (start_i),
@@ -33,6 +34,7 @@ module VPU_FP_RECIP
         .m_axis_result_tuser                ()
     );
     
+    (* black_box *)
     floating_point_div fp_div_0 (
         .aclk                               (clk),
         .s_axis_a_tvalid                    (done),

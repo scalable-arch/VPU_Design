@@ -40,7 +40,7 @@ module VPU_CONTROLLER
 
     logic                                   ready;
     logic                                   opget_start, opget_start_n;
-    logic                                   exec_start;
+    logic                                   exec_start, exec_start_n;
     logic                                   wb_start;
     logic                                   wb_data_valid;
     logic                                   operand_queue_rden;
@@ -49,18 +49,20 @@ module VPU_CONTROLLER
         if(!rst_n) begin
             state                           <= S_IDLE;
             opget_start                     <= 1'b0;
+            exec_start                      <= 1'b0;
         end else begin
             state                           <= state_n;
             opget_start                     <= opget_start_n;
+            exec_start                      <= exec_start_n;
         end
     end
     
     always_comb begin
         state_n                             = state;
-        opget_start_n                       = 1'b0;
+        opget_start_n                       = opget_start;
+        exec_start_n                        = exec_start;
 
         ready                               = 1'b0;
-        exec_start                          = 1'b0;
         wb_start                            = 1'b0;
         wb_data_valid                       = 1'b0;
         operand_queue_rden                  = 1'b0;
@@ -75,28 +77,30 @@ module VPU_CONTROLLER
             end
 
             S_GETOP: begin
+                opget_start_n               = 1'b0;
                 if(opget_done_i) begin
-                    exec_start              = 1'b1;
-                    operand_queue_rden      = 1'b1;
+                    exec_start_n            = 1'b1;
                     state_n                 = S_EXEC_1;
                 end
             end
 
             S_EXEC_1: begin
+                exec_start_n                = 1'b0;
                 if(exec_done_i) begin
                     if(instr_decoded_i.op_func.op_type == EXEC) begin
                         wb_data_valid       = 1'b1;
                     end
                     operand_queue_rden      = 1'b1;
-                    exec_start              = 1'b1;
+                    exec_start_n            = 1'b1;
                     state_n                 = S_EXEC_2;
                 end
             end
 
             S_EXEC_2: begin
+                exec_start_n                = 1'b0;
                 if(exec_done_i) begin
                     wb_data_valid           = 1'b1;
-                    //operand_queue_rden      = 1'b1;
+                    operand_queue_rden      = 1'b1;
                     wb_start                = 1'b1;
                     state_n                 = S_WB;
                 end

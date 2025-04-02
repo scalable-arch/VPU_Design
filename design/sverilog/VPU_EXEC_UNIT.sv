@@ -109,6 +109,6 @@ module VPU_EXEC_UNIT
             done_n                                        = red_done;
         end
     end
-    assign  dout_o                                      = dout;
-    assign  done_o                                      = done;
+    assign  dout_o                                      = dout_n;
+    assign  done_o                                      = done_n;
 endmodule

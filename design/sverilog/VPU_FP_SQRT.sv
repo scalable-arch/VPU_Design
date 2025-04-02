@@ -23,7 +23,7 @@ module VPU_FP_SQRT
     
     logic   [OPERAND_WIDTH-1:0]             result, result_valid;
     
-    
+    (* black_box *)
     floating_point_sqrt fp_sqrt_0 (
         .aclk                               (clk),
         .s_axis_a_tvalid                    (start_i),

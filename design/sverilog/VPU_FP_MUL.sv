@@ -24,7 +24,7 @@ module VPU_FP_MUL
     
     logic   [OPERAND_WIDTH-1:0]             result, result_valid;
     
-    
+    (* black_box *)
     floating_point_mul fp_mul_0 (
         .aclk                               (clk),
         .s_axis_a_tvalid                    (start_i),
