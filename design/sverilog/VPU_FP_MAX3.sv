@@ -24,7 +24,7 @@ module VPU_FP_MAX3
 
     logic  [OPERAND_WIDTH-1:0]              a_tdata, b_tdata;
     logic                                   tvalid;
-    logic                                   cnt, cnt_n;
+    logic   [1:0]                           cnt, cnt_n;
     logic                                   done;
     wire    [3:0]                           result_tdata;
     wire                                    result_tvalid;
@@ -32,10 +32,10 @@ module VPU_FP_MAX3
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             operand_latch                   <= {OPERAND_WIDTH{1'b0}};
-            cnt                             <= 1'b0;
-        end else if(start_i) begin
-            operand_latch                   <= operand_latch_n;
+            cnt                             <= 2'b0;
+        end else begin
             cnt                             <= cnt_n;
+            operand_latch                   <= operand_latch_n;
         end
     end
 
@@ -49,18 +49,29 @@ module VPU_FP_MAX3
 
         // 1bit counter for two-stage operation
         if(result_tvalid) begin
-            cnt_n                           = cnt + 1'd1;
-            operand_latch_n                 = (result_tdata == 4'b0010) ? operand_1 : operand_0;
+            //cnt_n                           = cnt + 1'd1;
+            operand_latch_n                 = (result_tdata == 4'b0001) ? operand_0 : operand_1;
         end
 
         // tvalid is start-bit of fp_max_operator
         if(start_i) begin
             tvalid                          = 1'b1;
-        end else begin
-            tvalid                          = result_tvalid & cnt_n;
+            //cnt_n                           = cnt + 1'd1;
+        end else if(cnt == 'd1)begin
+            tvalid                          = result_tvalid;
         end
 
-        if(cnt_n) begin // second_stage
+        if(cnt == 'd2) begin
+            if(result_tvalid) begin
+                cnt_n                       = 'd0;
+            end
+        end else begin
+            if(tvalid) begin
+                cnt_n                       = cnt + 1'd1;
+            end
+        end
+
+        if(cnt) begin // second_stage
             a_tdata                         = operand_latch_n;
             b_tdata                         = operand_2;
         end else begin // first_stage
@@ -68,7 +79,7 @@ module VPU_FP_MAX3
             b_tdata                         = operand_1;
         end
 
-        done                                = result_tvalid & cnt;
+        done                                = result_tvalid & (cnt == 'd2);
     end
 
     floating_point_cmp fp_max (
@@ -83,6 +94,6 @@ module VPU_FP_MAX3
     );
 
     // Assign
-    assign  result_o                        = (result_tdata == 4'b0010) ? operand_2 : operand_latch;
+    assign  result_o                        = (result_tdata == 4'b0001) ? operand_latch : operand_2;
     assign  done_o                          = done;
 endmodule

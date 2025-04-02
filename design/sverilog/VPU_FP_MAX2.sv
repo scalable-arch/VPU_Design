@@ -39,6 +39,6 @@ module VPU_FP_MAX2
     assign  a_tdata                         = operand_0;
     assign  b_tdata                         = operand_1;
     assign  tvalid                          = start_i;
-    assign  result_o                        = (result_tdata == 4'b0010) ? operand_1 : operand_0;
+    assign  result_o                        = (result_tdata == 4'b0001) ? operand_0 : operand_1;
     assign  done_o                          = result_tvalid;
 endmodule

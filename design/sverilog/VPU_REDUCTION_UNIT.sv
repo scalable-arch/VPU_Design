@@ -37,18 +37,17 @@ module VPU_REDUCTION_UNIT
     wire                                            fp_max_done;
 
     logic   [OPERAND_WIDTH-1:0]                     buff;
-    logic   [EXEC_CNT_LG2-1:0]                      cnt, cnt_n;
-    logic   [EXEC_CNT_LG2-1:0]                      stage, stage_n;
+    logic   [EXEC_CNT_LG2:0]                        stage, stage_n;
     logic   [MAX_DELAY_LG2-1:0]                     delay;
 
     always_comb begin
         if(op_func_i.fp_req.fp_sum_r) begin
-            if(stage == 'd0)
+            if(stage == 'd1)
                 done                                = fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2];
             else    
                 done                                = fp_sum_done;
         end else begin
-            if(stage == 'd0)
+            if(stage == 'd1)
                 done                                = fp_max_itmd_done[ELEM_CNT_PER_EXEC-2];
             else 
                 done                                = fp_max_done;
@@ -57,11 +56,11 @@ module VPU_REDUCTION_UNIT
 
     always_ff @(posedge clk) begin
         if(!rst_n) begin
-            stage                                   <= {EXEC_CNT_LG2{1'b0}};
+            stage                                   <= {(EXEC_CNT_LG2+1){1'b0}};
             buff                                    <= {OPERAND_WIDTH{1'b0}};
         end else begin
             stage                                   <= stage_n;
-            if(done && (stage == 'd0)) begin
+            if(done && (stage == 'd1)) begin
                 buff                                <= itmd_dout;
             end
         end
@@ -69,12 +68,11 @@ module VPU_REDUCTION_UNIT
 
     always_comb begin
         stage_n                                     = stage;
-        if(done) begin
-            if(stage == EXEC_CNT-1) begin
-                stage_n                             = {EXEC_CNT_LG2{1'b0}};
-            end else begin
-                stage_n                             = stage + 'd1;
-            end
+        if(start_i) begin
+            stage_n                                 = stage + 'd1;
+        end else if(done) begin
+            if(stage == EXEC_CNT)
+                stage_n                             = {(EXEC_CNT_LG2+1){1'b0}};
         end
     end
 
@@ -157,7 +155,7 @@ module VPU_REDUCTION_UNIT
         .rst_n                                      (rst_n),
         .operand_0                                  (buff),
         .operand_1                                  (itmd_dout),
-        .start_i                                    ((stage == EXEC_CNT-1) && fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2]),
+        .start_i                                    ((stage == EXEC_CNT) && fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2]),
         .sub                                        (1'b0),
         .result_o                                   (fp_sum_res),
         .done_o                                     (fp_sum_done)
@@ -169,7 +167,7 @@ module VPU_REDUCTION_UNIT
         .rst_n                                      (rst_n),
         .operand_0                                  (buff),
         .operand_1                                  (itmd_dout),
-        .start_i                                    ((stage == EXEC_CNT-1) && fp_max_itmd_done[ELEM_CNT_PER_EXEC-2]),
+        .start_i                                    ((stage == EXEC_CNT) && fp_max_itmd_done[ELEM_CNT_PER_EXEC-2]),
         .result_o                                   (fp_max_res),
         .done_o                                     (fp_max_done)
     );
