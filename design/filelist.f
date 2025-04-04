@@ -24,3 +24,5 @@ ${VPU_HOME}/design/sverilog/VPU_EXEC_UNIT.sv
 ${VPU_HOME}/design/sverilog/VPU_DECODER.sv
 ${VPU_HOME}/design/sverilog/VPU_CONTROLLER.sv
 ${VPU_HOME}/design/sverilog/VPU_WB_UNIT.sv
+${VPU_HOME}/design/sverilog/SAL_FIFO.sv
+${VPU_HOME}/design/sverilog/SAL_SDP_RAM.sv
