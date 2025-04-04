@@ -19,81 +19,57 @@ module VPU_FP_MAX3
     output                                  done_o
 );
     import VPU_PKG::*;
+    logic                                   operand_queue_rden;
+    wire    [OPERAND_WIDTH-1:0]             operand_queue_rdata;
+    wire    [OPERAND_WIDTH-1:0]             dout_0, dout_1;
+    wire                                    done_0, done_1;
 
-    logic   [OPERAND_WIDTH-1:0]             operand_latch, operand_latch_n;
+    VPU_FP_MAX2 # (
+    ) fp_max2_0 (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+        .operand_0                          (operand_0),
+        .operand_1                          (operand_1),
+        .start_i                            (start_i),
+        .result_o                           (dout_0),
+        .done_o                             (done_0)
+    );
 
-    logic  [OPERAND_WIDTH-1:0]              a_tdata, b_tdata;
-    logic                                   tvalid;
-    logic   [1:0]                           cnt, cnt_n;
-    logic                                   done;
-    wire    [3:0]                           result_tdata;
-    wire                                    result_tvalid;
+    VPU_FP_MAX2 # (
+    ) fp_max2_1 (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+        .operand_0                          (dout_0),
+        .operand_1                          (operand_queue_rdata),
+        .start_i                            (done_0),
+        .result_o                           (dout_1),
+        .done_o                             (done_1)
+    );
 
-    always_ff @(posedge clk) begin
-        if(!rst_n) begin
-            operand_latch                   <= {OPERAND_WIDTH{1'b0}};
-            cnt                             <= 2'b0;
-        end else begin
-            cnt                             <= cnt_n;
-            operand_latch                   <= operand_latch_n;
-        end
-    end
+    SAL_FIFO
+    #(
+        .DEPTH_LG2                      (1),
+        .DATA_WIDTH                     (OPERAND_WIDTH)
+    )
+    operand_1_queue
+    (
+        .clk                            (clk)
+      , .rst_n                          (rst_n)
 
-    always_comb begin
-        cnt_n                               = cnt;
-        operand_latch_n                     = operand_latch;
-        tvalid                              = 1'b0;
-        a_tdata                             = {(OPERAND_WIDTH){1'b0}};
-        b_tdata                             = {(OPERAND_WIDTH){1'b0}};
-        done                                = 1'b0;
+      , .full_o                         ()
+      , .afull_o                        ()
+      , .wren_i                         (start_i)
+      , .wdata_i                        (operand_2)
 
-        // 1bit counter for two-stage operation
-        if(result_tvalid) begin
-            //cnt_n                           = cnt + 1'd1;
-            operand_latch_n                 = (result_tdata == 4'b0001) ? operand_0 : operand_1;
-        end
+      , .empty_o                        ()
+      , .aempty_o                       (/* NC */)
+      , .rden_i                         (done_0)
+      , .rdata_o                        (operand_queue_rdata)
 
-        // tvalid is start-bit of fp_max_operator
-        if(start_i) begin
-            tvalid                          = 1'b1;
-            //cnt_n                           = cnt + 1'd1;
-        end else if(cnt == 'd1)begin
-            tvalid                          = result_tvalid;
-        end
-
-        if(cnt == 'd2) begin
-            if(result_tvalid) begin
-                cnt_n                       = 'd0;
-            end
-        end else begin
-            if(tvalid) begin
-                cnt_n                       = cnt + 1'd1;
-            end
-        end
-
-        if(cnt) begin // second_stage
-            a_tdata                         = operand_latch_n;
-            b_tdata                         = operand_2;
-        end else begin // first_stage
-            a_tdata                         = operand_0;
-            b_tdata                         = operand_1;
-        end
-
-        done                                = result_tvalid & (cnt == 'd2);
-    end
-
-    floating_point_cmp fp_max (
-        .aclk                               (clk),
-        .s_axis_a_tvalid                    (tvalid),
-        .s_axis_a_tdata                     (a_tdata),
-        .s_axis_b_tvalid                    (tvalid),
-        .s_axis_b_tdata                     (b_tdata),
-        .m_axis_result_tvalid               (result_tvalid),
-        .m_axis_result_tdata                (result_tdata),
-        .m_axis_result_tuser                ()
+      , .debug_o                        ()
     );
 
     // Assign
-    assign  result_o                        = (result_tdata == 4'b0001) ? operand_latch : operand_2;
-    assign  done_o                          = done;
+    assign  result_o                        = dout_1;
+    assign  done_o                          = done_1;
 endmodule

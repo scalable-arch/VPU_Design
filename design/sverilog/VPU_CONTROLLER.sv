@@ -41,19 +41,27 @@ module VPU_CONTROLLER
     logic                                   ready;
     logic                                   opget_start, opget_start_n;
     logic                                   exec_start, exec_start_n;
+    logic                                   exec_start_delayed;
+    logic                                   exec_done_delayed;
     logic                                   wb_start;
     logic                                   wb_data_valid;
-    logic                                   operand_queue_rden;
+    logic                                   operand_queue_rden, operand_queue_rden_n;
 
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             state                           <= S_IDLE;
             opget_start                     <= 1'b0;
             exec_start                      <= 1'b0;
+            exec_start_delayed              <= 1'b0;
+            operand_queue_rden              <= 1'b0;
+            exec_done_delayed               <= 1'b0;
         end else begin
             state                           <= state_n;
             opget_start                     <= opget_start_n;
             exec_start                      <= exec_start_n;
+            exec_start_delayed              <= exec_start;
+            operand_queue_rden              <= operand_queue_rden_n;
+            exec_done_delayed               <= exec_done_i;
         end
     end
     
@@ -61,11 +69,11 @@ module VPU_CONTROLLER
         state_n                             = state;
         opget_start_n                       = opget_start;
         exec_start_n                        = exec_start;
+        operand_queue_rden_n                = operand_queue_rden;
 
         ready                               = 1'b0;
         wb_start                            = 1'b0;
         wb_data_valid                       = 1'b0;
-        operand_queue_rden                  = 1'b0;
 
         case(state)
             S_IDLE: begin
@@ -80,33 +88,36 @@ module VPU_CONTROLLER
                 opget_start_n               = 1'b0;
                 if(opget_done_i) begin
                     exec_start_n            = 1'b1;
+                    operand_queue_rden_n    = 1'b1;
                     state_n                 = S_EXEC_1;
                 end
             end
 
             S_EXEC_1: begin
                 exec_start_n                = 1'b0;
-                if(exec_done_i) begin
-                    if(instr_decoded_i.op_func.op_type == EXEC) begin
-                        wb_data_valid       = 1'b1;
-                    end
-                    operand_queue_rden      = 1'b1;
-                    exec_start_n            = 1'b1;
-                    state_n                 = S_EXEC_2;
-                end
-            end
+                operand_queue_rden_n        = 1'b0;
 
-            S_EXEC_2: begin
-                exec_start_n                = 1'b0;
                 if(exec_done_i) begin
-                    wb_data_valid           = 1'b1;
-                    operand_queue_rden      = 1'b1;
-                    wb_start                = 1'b1;
-                    state_n                 = S_WB;
+                    if(instr_decoded_i.op_func.op_type == RED) begin
+                        wb_data_valid               = 1'b1;
+                        operand_queue_rden_n        = 1'b1;
+                        wb_start                    = 1'b1;
+                        state_n                     = S_WB;
+                    end else begin
+                        if(exec_done_delayed) begin
+                            wb_data_valid           = 1'b1;
+                            operand_queue_rden_n    = 1'b1;
+                            wb_start                = 1'b1;
+                            state_n                 = S_WB;
+                        end else begin
+                            wb_data_valid       = 1'b1;
+                        end
+                    end
                 end
             end
 
             S_WB: begin
+                operand_queue_rden_n        = 1'b0;
                 if(wb_done_i) begin
                     // response..?          = 1'b1;
                     state_n                 = S_IDLE;
@@ -117,7 +128,7 @@ module VPU_CONTROLLER
 
     assign  ctrl_ready_o                    = ready;
     assign  opget_start_o                   = opget_start;
-    assign  exec_start_o                    = exec_start;
+    assign  exec_start_o                    = exec_start | exec_start_delayed;
     assign  wb_start_o                      = wb_start;
     assign  wb_data_valid_o                 = wb_data_valid;
     genvar k;

@@ -2,7 +2,7 @@
 
 module VPU_FP_ADD3
 #(
-
+    parameter   ACCEPTANCE_CAPABILITY       = 2 
 )
 (
     input   wire                            clk,
@@ -13,7 +13,6 @@ module VPU_FP_ADD3
     input   [VPU_PKG::OPERAND_WIDTH-1:0]    operand_1,
     input   [VPU_PKG::OPERAND_WIDTH-1:0]    operand_2,
     input                                   start_i,
-    input   [VPU_PKG::SRAM_R_PORT_CNT-1:0]  operand_valid,
 
     //To VPU_DST_PORT
     output  [VPU_PKG::OPERAND_WIDTH-1:0]    result_o,
@@ -21,52 +20,80 @@ module VPU_FP_ADD3
 );
     import VPU_PKG::*;
 
-    logic                                   cnt, cnt_n;
+    logic                                   flag, flag_n;
     logic                                   tvalid;
     logic   [OPERAND_WIDTH-1:0]             a_tdata, b_tdata;
     logic                                   done;
+    logic                                   operand_queue_rden;
+    logic                                   result_tvalid_delayed;
 
+    wire    [OPERAND_WIDTH-1:0]             operand_queue_rdata;
     wire    [OPERAND_WIDTH-1:0]             result_tdata;
     wire                                    result_tvalid;
 
     always_ff @(posedge clk) begin
         if(!rst_n) begin
-            cnt                             <= 1'b0;
+            flag                            <= 1'b0;
+            result_tvalid_delayed           <= 1'b0;
         end else begin
-            cnt                             <= cnt_n;
+            flag                            <= flag_n;
+            result_tvalid_delayed           <= result_tvalid;
         end
     end
 
     always_comb begin
-        cnt_n                               = cnt;
+        flag_n                              = flag;
+
         tvalid                              = 1'b0;
-        a_tdata                             = {(OPERAND_WIDTH){1'b0}};
-        b_tdata                             = {(OPERAND_WIDTH){1'b0}};
         done                                = 1'b0;
+        operand_queue_rden                  = 1'b0;
 
-        // 1bit counter for two-stage operation
-        if(result_tvalid) begin
-            cnt_n                           = cnt + 1'd1;
-        end
-
-        // tvalid is start-bit of fp_add_sub_operator
         if(start_i) begin
             tvalid                          = 1'b1;
         end else begin
-            tvalid                          = result_tvalid & cnt_n;
+            tvalid                          = result_tvalid & !flag;
         end
 
-        if(cnt_n) begin // second_stage
+        if(result_tvalid & result_tvalid_delayed) begin
+            flag_n                          = !flag;
+        end
+
+        if(result_tvalid) begin // second_stage
             a_tdata                         = result_tdata;
-            b_tdata                         = operand_2;
+            b_tdata                         = operand_queue_rdata;
+            if(!flag) begin
+                operand_queue_rden          = 1'b1;
+            end
         end else begin // first_stage
             a_tdata                         = operand_0;
             b_tdata                         = operand_1;
         end
-
         // done signal is valid only for second_stage
-        done                                = result_tvalid & cnt;
+        done                                = result_tvalid & flag;
     end
+
+    SAL_FIFO
+    #(
+        .DEPTH_LG2                          ($clog2(ACCEPTANCE_CAPABILITY)),
+        .DATA_WIDTH                         (OPERAND_WIDTH)
+    )
+    operand_2_queue
+    (
+        .clk                                (clk)
+      , .rst_n                              (rst_n)
+
+      , .full_o                             ()
+      , .afull_o                            ()
+      , .wren_i                             (start_i)
+      , .wdata_i                            (operand_2)
+
+      , .empty_o                            ()
+      , .aempty_o                           (/* NC */)
+      , .rden_i                             (operand_queue_rden)
+      , .rdata_o                            (operand_queue_rdata)
+
+      , .debug_o                            ()
+    );
 
     floating_point_add_sub fp_add_sub_0 (
         .aclk                               (clk),
@@ -75,7 +102,7 @@ module VPU_FP_ADD3
         .s_axis_b_tvalid                    (tvalid),
         .s_axis_b_tdata                     (b_tdata),
         .s_axis_operation_tvalid            (tvalid),
-        .s_axis_operation_tdata             ('h0),
+        .s_axis_operation_tdata             (8'h00),
         .m_axis_result_tvalid               (result_tvalid),
         .m_axis_result_tdata                (result_tdata),
         .m_axis_result_tuser                ()
