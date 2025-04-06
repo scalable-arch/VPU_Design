@@ -93,35 +93,35 @@ interface VPU_RESPONSE_IF
 );
     import VPU_PKG::*;
 
-    logic                                   valid;
-    logic                                   ready;
-    logic   [STREAM_ID_WIDTH-1:0]           stream_id;
+    logic                                   resp_valid;
+    logic                                   resp_ready;
+    logic   [STREAM_ID_WIDTH-1:0]           resp_stream_id;
 
     modport host (
-        output      ready,
-        input       valid, stream_id
+        output      resp_ready,
+        input       resp_valid, resp_stream_id
     );
 
     modport device (
-        input       ready,
-        output      valid, stream_id
+        input       resp_ready,
+        output      resp_valid, resp_stream_id
     );
 
     //---------------------------------
     // Task For Verification
     //---------------------------------
     task automatic init();
-        ready                               = 1'b0;
+        resp_ready                = 1'b0;
     endtask
 
     task automatic response();
-        while (!valid) begin
+        while (!resp_valid) begin
             @(posedge clk);
         end
-        ready                = 1'b1;
+        resp_ready                = 1'b1;
         
         @(posedge clk);
-        ready                = 1'b0;
+        resp_ready                = 1'b0;
 
         @(posedge clk);
     endtask

@@ -17,9 +17,9 @@ module VPU_TOP_WRAPPER (
     input   wire    [STREAM_ID_WIDTH-1:0]   stream_id_i,
 
     // VPU_RESPONSE_IF
-    output  wire                            valid_o,
-    output  wire    [STREAM_ID_WIDTH-1:0]   stream_id_o,
-    input   wire                            ready_i,
+    output  wire                            resp_valid_o,
+    output  wire    [STREAM_ID_WIDTH-1:0]   resp_stream_id_o,
+    input   wire                            resp_ready_i,
 
 
     // VPU_SRC_PORT_IF
@@ -57,10 +57,10 @@ module VPU_TOP_WRAPPER (
     assign  ready_o                         = vpu_req_if.ready;
 
     // VPU_RESPONSE_IF
-    VPU_REQ_IF  vpu_response_if  (.clk(clk), .rst_n(rst_n));
-    assign  valid_o                         = vpu_response_if.valid;
-    assign  stream_id_o                     = vpu_response_if.stream_id;
-    assign  vpu_response_if.ready           = ready_i;
+    VPU_RESPONSE_IF  vpu_response_if  (.clk(clk), .rst_n(rst_n));
+    assign  resp_valid_o                    = vpu_response_if.resp_valid;
+    assign  resp_stream_id_o                = vpu_response_if.resp_stream_id;
+    assign  vpu_response_if.resp_ready      = resp_ready_i;
 
     // VPU_SRC_PORT_IF
     VPU_SRC_PORT_IF vpu_src0_port_if (.clk(clk), .rst_n(rst_n));

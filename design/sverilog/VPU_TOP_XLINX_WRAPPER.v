@@ -25,9 +25,9 @@ module VPU_TOP_XLINX_WRAPPER
     input   wire                            valid_i,
 
     // VPU_RESPONSE_IF
-    output  wire                            valid_o,
-    output  wire    [STREAM_ID_WIDTH-1:0]   stream_id_o,
-    input   wire                            ready_i,
+    output  wire                            resp_valid_o,
+    output  wire    [STREAM_ID_WIDTH-1:0]   resp_stream_id_o,
+    input   wire                            resp_ready_i,
 
     // VPU_SRC_PORT_IF
     output  wire    [SRAM_READ_PORT_CNT-1:0]                        rreq,
@@ -66,9 +66,9 @@ module VPU_TOP_XLINX_WRAPPER
       , .valid_i                            (valid_i)
 
       // VPU_RESPONSE_IF
-      , .valid_o                            (valid_o)
-      , .stream_id_o                        (stream_id_o)
-      , .ready_i                            (ready_i)
+      , .resp_valid_o                       (resp_valid_o)
+      , .resp_stream_id_o                   (resp_stream_id_o)
+      , .resp_ready_i                       (resp_ready_i)
 
       // VPU_SRC_PORT_IF
       , .rreq_o                             (rreq)

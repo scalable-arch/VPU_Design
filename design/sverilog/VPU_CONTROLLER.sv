@@ -126,7 +126,7 @@ module VPU_CONTROLLER
                 if(wb_done_i) begin
                     response_valid_n        = 1'b1;
                 end
-                if(vpu_response_if.valid & vpu_response_if.ready) begin
+                if(vpu_response_if.resp_valid & vpu_response_if.resp_ready) begin
                     response_valid_n        = 1'b0;
                     state_n                 = S_IDLE;
                 end
@@ -145,6 +145,6 @@ module VPU_CONTROLLER
             assign operand_queue_rden_o[k]  = (operand_queue_rden & instr_decoded_i.rvalid[k]);
         end
     endgenerate
-    assign  vpu_response_if.stream_id       = stream_id_i;
-    assign  vpu_response_if.valid           = response_valid;
+    assign  vpu_response_if.resp_stream_id  = stream_id_i;
+    assign  vpu_response_if.resp_valid      = response_valid;
 endmodule
