@@ -10,6 +10,7 @@ module VPU_CONTROLLER
 
     input   wire                            ctrl_valid_i,
     input   VPU_PKG::vpu_instr_decoded_t    instr_decoded_i,
+    input   [VPU_PKG::STREAM_ID_WIDTH-1:0]  stream_id_i,
     output  wire                            ctrl_ready_o,
     
     // OPGET SubState
@@ -25,18 +26,18 @@ module VPU_CONTROLLER
     // WB SubState
     output  wire                            wb_data_valid_o,
     output  wire                            wb_start_o,
-    input   wire                            wb_done_i
+    input   wire                            wb_done_i,
 
+    VPU_RESPONSE_IF.device                  vpu_response_if
 );
     import VPU_PKG::*;
 
-    localparam  S_IDLE                      = 3'b000;
-    localparam  S_GETOP                     = 3'b001;
-    localparam  S_EXEC_1                    = 3'b010;
-    localparam  S_EXEC_2                    = 3'b011;
-    localparam  S_WB                        = 3'b100;
+    localparam  S_IDLE                      = 2'b00;
+    localparam  S_GETOP                     = 2'b01;
+    localparam  S_EXEC                      = 2'b10;
+    localparam  S_WB                        = 2'b11;
 
-    logic   [2:0]                           state,  state_n;
+    logic   [1:0]                           state,  state_n;
 
     logic                                   ready;
     logic                                   opget_start, opget_start_n;
@@ -46,6 +47,7 @@ module VPU_CONTROLLER
     logic                                   wb_start;
     logic                                   wb_data_valid;
     logic                                   operand_queue_rden, operand_queue_rden_n;
+    logic                                   response_valid, response_valid_n;
 
     always_ff @(posedge clk) begin
         if(!rst_n) begin
@@ -55,6 +57,7 @@ module VPU_CONTROLLER
             exec_start_delayed              <= 1'b0;
             operand_queue_rden              <= 1'b0;
             exec_done_delayed               <= 1'b0;
+            response_valid                  <= 1'b0;
         end else begin
             state                           <= state_n;
             opget_start                     <= opget_start_n;
@@ -62,6 +65,7 @@ module VPU_CONTROLLER
             exec_start_delayed              <= exec_start;
             operand_queue_rden              <= operand_queue_rden_n;
             exec_done_delayed               <= exec_done_i;
+            response_valid                  <= response_valid_n;
         end
     end
     
@@ -70,6 +74,7 @@ module VPU_CONTROLLER
         opget_start_n                       = opget_start;
         exec_start_n                        = exec_start;
         operand_queue_rden_n                = operand_queue_rden;
+        response_valid_n                    = response_valid;
 
         ready                               = 1'b0;
         wb_start                            = 1'b0;
@@ -89,11 +94,11 @@ module VPU_CONTROLLER
                 if(opget_done_i) begin
                     exec_start_n            = 1'b1;
                     operand_queue_rden_n    = 1'b1;
-                    state_n                 = S_EXEC_1;
+                    state_n                 = S_EXEC;
                 end
             end
 
-            S_EXEC_1: begin
+            S_EXEC: begin
                 exec_start_n                = 1'b0;
                 operand_queue_rden_n        = 1'b0;
 
@@ -119,7 +124,10 @@ module VPU_CONTROLLER
             S_WB: begin
                 operand_queue_rden_n        = 1'b0;
                 if(wb_done_i) begin
-                    // response..?          = 1'b1;
+                    response_valid_n        = 1'b1;
+                end
+                if(vpu_response_if.valid & vpu_response_if.ready) begin
+                    response_valid_n        = 1'b0;
                     state_n                 = S_IDLE;
                 end
             end
@@ -133,9 +141,10 @@ module VPU_CONTROLLER
     assign  wb_data_valid_o                 = wb_data_valid;
     genvar k;
     generate
-        for (k=0; k < SRAM_R_PORT_CNT; k=k+1) begin : PACKING_OPERAND_QUEUE_RDEN
+        for (k=0; k < SRAM_READ_PORT_CNT; k=k+1) begin : PACKING_OPERAND_QUEUE_RDEN
             assign operand_queue_rden_o[k]  = (operand_queue_rden & instr_decoded_i.rvalid[k]);
         end
     endgenerate
-
+    assign  vpu_response_if.stream_id       = stream_id_i;
+    assign  vpu_response_if.valid           = response_valid;
 endmodule

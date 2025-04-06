@@ -2,22 +2,17 @@
 
 module VPU_WB_UNIT
 #(
-
 )
 (
     input   wire                            clk,
     input   wire                            rst_n,
-    
     //From/To VPU_CONTROLLER
     input   wire                            start_i,
     output  wire                            done_o,
-
     // From VPU_LANE
     input   wire                            wb_data_valid_i,
-    input   wire [VPU_PKG::DWIDTH_PER_EXEC-1:0] wb_data_i,
-
+    input   wire [VPU_PKG::EXEC_UNIT_DATA_WIDTH-1:0] wb_data_i,
     input   VPU_PKG::vpu_instr_decoded_t    instr_decoded_i,
-
     // SRAM_W_PORT
     VPU_DST_PORT_IF.host                    vpu_dst0_port_if
 );
@@ -32,12 +27,12 @@ module VPU_WB_UNIT
     logic                                   done;
 
     // SRAM_W_PORT_IF
-    logic                                   req,        req_n;
-    logic                                   web,        web_n;
-    logic                                   wlast,      wlast_n;
+    logic                                   req, req_n;
+    logic                                   web, web_n;
+    logic                                   wlast, wlast_n;
 
-    logic   [EXEC_CNT_LG2-1:0]              cnt,        cnt_n;
-    logic   [DWIDTH_PER_EXEC-1:0]           wb_data [EXEC_CNT];
+    logic   [EXEC_CNT_LG2-1:0]              cnt, cnt_n;
+    logic   [EXEC_UNIT_DATA_WIDTH-1:0]      wb_data [EXEC_CNT];
     
     wire    [SRAM_DATA_WIDTH-1:0]           wdata;
 
@@ -49,7 +44,7 @@ module VPU_WB_UNIT
             wlast                           <= 1'b0;
             cnt                             <= 1'b0;
             for(int i = 0; i < EXEC_CNT; i++) begin
-                wb_data[i]                  <= {(DWIDTH_PER_EXEC){1'b0}};
+                wb_data[i]                  <= {(EXEC_UNIT_DATA_WIDTH){1'b0}};
             end
         end else begin
             state                           <= state_n;
@@ -58,7 +53,7 @@ module VPU_WB_UNIT
             wlast                           <= wlast_n;
             cnt                             <= cnt_n;
             if(wb_data_valid_i) begin
-                if(instr_decoded_i.op_func.op_type==EXEC) begin
+                if(instr_decoded_i.op_func.op_type == EXEC) begin
                     wb_data[cnt]            <= wb_data_i;
                 end else begin
                     for(int i = 0; i < EXEC_CNT; i++) begin
@@ -106,7 +101,6 @@ module VPU_WB_UNIT
         endcase
     end
 
-    
     assign  vpu_dst0_port_if.req            = req;
     assign  vpu_dst0_port_if.wid            = get_bank_id(instr_decoded_i.waddr);
     assign  vpu_dst0_port_if.addr           = get_bank_id(instr_decoded_i.waddr);
@@ -117,7 +111,7 @@ module VPU_WB_UNIT
     genvar j;
     generate
         for(j = 0; j < EXEC_CNT; j++) begin : ASSIGN_WB_DATA
-            assign wdata[j*DWIDTH_PER_EXEC+:DWIDTH_PER_EXEC] = wb_data[j];
+            assign wdata[j*EXEC_UNIT_DATA_WIDTH+:EXEC_UNIT_DATA_WIDTH] = wb_data[j];
         end
     endgenerate
     assign  done_o                          = done;

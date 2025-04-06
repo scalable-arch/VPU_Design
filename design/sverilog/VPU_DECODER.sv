@@ -11,6 +11,7 @@ module VPU_DECODER
     VPU_REQ_IF.device                           vpu_req_if,
     
     output  VPU_PKG::vpu_instr_decoded_t        instr_decoded_o,
+    output  wire [VPU_PKG::STREAM_ID_WIDTH-1:0] stream_id_o,
     input   wire                                ctrl_ready_i,
     output  wire                                ctrl_valid_o
 );
@@ -18,19 +19,24 @@ module VPU_DECODER
 
     vpu_h2d_req_instr_t                         instr_latch, instr_latch_n;
     vpu_instr_decoded_t                         instr_decoded;
+    logic   [STREAM_ID_WIDTH-1:0]               stream_id_latch, stream_id_latch_n;
 
     always_ff @(posedge clk) begin
         if(!rst_n) begin
             instr_latch                         <= {$bits(vpu_h2d_req_instr_t){1'b0}};
+            stream_id_latch                     <= {STREAM_ID_WIDTH{1'b0}};
         end else begin
             instr_latch                         <= instr_latch_n;
+            stream_id_latch                     <= stream_id_latch_n;
         end
     end
 
     always_comb begin
         instr_latch_n                           = instr_latch;
+        stream_id_latch_n                       = stream_id_latch;
         if(vpu_req_if.valid & vpu_req_if.ready) begin
             instr_latch_n                       = vpu_req_if.h2d_req_instr;
+            stream_id_latch_n                   = vpu_req_if.stream_id;
         end
     end
 
@@ -142,6 +148,7 @@ module VPU_DECODER
     end
 
     assign  instr_decoded_o                     = instr_decoded;
+    assign  stream_id_o                         = stream_id_latch;
     assign  vpu_req_if.ready                    = ctrl_ready_i;
     assign  ctrl_valid_o                        = vpu_req_if.valid;
 endmodule

@@ -24,8 +24,9 @@ module VPU_TOP_TB ();
     string                          test_vector_f;
     string                          golden_ref_f;
 
-    bit                             done;
-    int                             cnt = 0;
+    bit                             test_done;
+    int                             transaction_cnt = 0;
+    int                             response_cnt = 0;
 
     // Data Structure
     VPU_PKG::vpu_h2d_req_opcode_t   opcode_queue[$];
@@ -34,13 +35,12 @@ module VPU_TOP_TB ();
     VPU_PKG::vpu_h2d_req_instr_t    instr_queue[$];
     typedef operand_t               src_queue[$];
     typedef operand_t               dst_queue[$];
-    src_queue                       tot_src_queue[VPU_PKG::SRAM_R_PORT_CNT];
-    dst_queue                       tot_dst_queue[VPU_PKG::SRAM_W_PORT_CNT];
+    src_queue                       tot_src_queue[VPU_PKG::SRAM_READ_PORT_CNT];
+    dst_queue                       tot_dst_queue[VPU_PKG::SRAM_WRITE_PORT_CNT];
 
-    reg [VPU_PKG::OPERAND_WIDTH-1:0] mem_dump[VPU_PKG::ELEM_PER_DIM_CNT * VPU_PKG::SRAM_R_PORT_CNT * `MEM_DEPTH];
-    reg [VPU_PKG::OPERAND_WIDTH-1:0] mem_dump_2[VPU_PKG::ELEM_PER_DIM_CNT * VPU_PKG::SRAM_R_PORT_CNT * `MEM_DEPTH];
+    reg [VPU_PKG::OPERAND_WIDTH-1:0] mem_dump[VPU_PKG::ELEM_PER_DIM_CNT * VPU_PKG::SRAM_READ_PORT_CNT * `MEM_DEPTH];
+    reg [VPU_PKG::OPERAND_WIDTH-1:0] mem_dump_2[VPU_PKG::ELEM_PER_DIM_CNT * VPU_PKG::SRAM_READ_PORT_CNT * `MEM_DEPTH];
     reg [VPU_PKG::OPERAND_WIDTH-1:0] golden_ref_dump[VPU_PKG::ELEM_PER_DIM_CNT * REQ_CNT];
-
 
     // timeout
 	initial begin
@@ -85,6 +85,7 @@ module VPU_TOP_TB ();
     //----------------------------------------------------------
 
     VPU_REQ_IF                  vpu_req_if (.clk(clk), .rst_n(rst_n));
+    VPU_RESPONSE_IF             vpu_response_if (.clk(clk), .rst_n(rst_n));
     VPU_SRC_PORT_IF             vpu_src0_port_if (.clk(clk), .rst_n(rst_n));
     VPU_SRC_PORT_IF             vpu_src1_port_if (.clk(clk), .rst_n(rst_n));
     VPU_SRC_PORT_IF             vpu_src2_port_if (.clk(clk), .rst_n(rst_n));
@@ -97,6 +98,7 @@ module VPU_TOP_TB ();
         .rst_n              (rst_n),
 
         .vpu_req_if         (vpu_req_if),
+        .vpu_response_if    (vpu_response_if),
         .vpu_src0_port_if   (vpu_src0_port_if),
         .vpu_src1_port_if   (vpu_src1_port_if),
         .vpu_src2_port_if   (vpu_src2_port_if),
@@ -111,6 +113,7 @@ module VPU_TOP_TB ();
 
     task test_init();
         vpu_req_if.init();
+        vpu_response_if.init();
         vpu_src0_port_if.init();
         vpu_src1_port_if.init();
         vpu_src2_port_if.init();
@@ -153,12 +156,12 @@ module VPU_TOP_TB ();
     task fill_src_operand_queue(VPU_PKG::vpu_h2d_req_opcode_t _opcode);
         operand_t operand;
         for(int i = 0; i < `MEM_DEPTH; i++) begin
-            for(int j = 0; j < SRAM_R_PORT_CNT; j++) begin
+            for(int j = 0; j < SRAM_READ_PORT_CNT; j++) begin
                 for(int k = 0; k < ELEM_PER_DIM_CNT; k++) begin
                     if((_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FSQRT) || (_opcode ==VPU_PKG::VPU_H2D_REQ_OPCODE_FRECIP)) begin
-                        operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump_2[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_R_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
+                        operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump_2[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_READ_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
                     end else begin
-                        operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_R_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
+                        operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_READ_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
                     end
                 end
                 tot_src_queue[j].push_back(operand);
@@ -168,14 +171,14 @@ module VPU_TOP_TB ();
     endtask
 
     task clear_dst_operand_queue();
-        for(int i = 0; i < SRAM_W_PORT_CNT; i++) begin
+        for(int i = 0; i < SRAM_WRITE_PORT_CNT; i++) begin
             tot_dst_queue[i].delete();
         end 
         repeat (3) @(posedge clk);
     endtask
     
     task clear_src_operand_queue();
-        for(int i = 0; i < SRAM_R_PORT_CNT; i++) begin
+        for(int i = 0; i < SRAM_READ_PORT_CNT; i++) begin
             tot_src_queue[i].delete();
         end 
         repeat (3) @(posedge clk);
@@ -226,15 +229,16 @@ module VPU_TOP_TB ();
     endtask
 
     task run_test();
-        done = 1'b0;
+        test_done = 1'b0;
         fork: fork_1
             driver_req();
             driver_src0();
             driver_src1();
             driver_src2();
-            oMonitor();
+            oMonitor_wdata();
+            oMonitor_response();
         join_any: fork_1
-        wait(done);
+        wait(test_done);
         @(posedge clk);
         disable fork_1;
     endtask
@@ -251,11 +255,12 @@ module VPU_TOP_TB ();
     
     task driver_req();
         VPU_PKG::vpu_h2d_req_instr_t instr;
+        int streamID;
         while (instr_queue.size()!=0) begin
             instr = instr_queue.pop_front();	// pop a request from the queue
-            vpu_req_if.gen_request(instr);	    // drive to DUT
+            streamID = $random % 3;
+            vpu_req_if.gen_request(instr,streamID);	    // drive to DUT
         end
-        
     endtask
 
     task driver_src0();
@@ -282,35 +287,46 @@ module VPU_TOP_TB ();
         end
     endtask
 
-    task oMonitor();
+    task oMonitor_wdata();
         operand_t result;
         operand_t answer;
-        cnt = 0;
-        while (cnt < REQ_CNT) begin
+        transaction_cnt = 0;
+        while (transaction_cnt < REQ_CNT) begin
             vpu_dst0_port_if.sram_write_transaction(result.operand);
             for(int i = 0; i < ELEM_PER_DIM_CNT; i++) begin
-                answer.operand[(i*VPU_PKG::OPERAND_WIDTH)+:(VPU_PKG::OPERAND_WIDTH)] = golden_ref_dump[((cnt)*(VPU_PKG::ELEM_PER_DIM_CNT))+i];
+                answer.operand[(i*VPU_PKG::OPERAND_WIDTH)+:(VPU_PKG::OPERAND_WIDTH)] = golden_ref_dump[((transaction_cnt)*(VPU_PKG::ELEM_PER_DIM_CNT))+i];
             end
             if(result != answer) begin
-                $write("<< %5dth request [Error][Incorrect] (OPCODE %1d) : ", cnt, c_opcode);
+                $write("<< %5dth request [Error][Incorrect] (OPCODE %1d) : ", transaction_cnt, c_opcode);
                 $write("result [0x%08h] | answer : [0x%08h]\n", result.operand, answer.operand);
                 @(posedge clk);
                 $finish;
             end else begin
-                $write("<< %5dth request [Correct] (OPCODE %1d) : ", cnt, c_opcode);
+                $write("<< %5dth request [Correct] (OPCODE %1d) : ", transaction_cnt, c_opcode);
                 $write("result [0x%08h] | answer : [0x%08h]\n", result.operand, answer.operand);
             end
-            cnt++;
+            transaction_cnt++;
         end
         @(posedge clk);
-        if(cnt == REQ_CNT) begin
-            $write("=============[OPCODE:%08h]All Pass=============\n", c_opcode);
-        end else begin
+        if(transaction_cnt != REQ_CNT) begin
             $write("[ERROR]][OPCODE:%08h]Fail, Missing Operand Check\n", c_opcode);
         end
-        done = 1'b1;
     endtask
-    
+
+    task oMonitor_response();
+        response_cnt = 0;
+        while (response_cnt < REQ_CNT) begin
+            vpu_response_if.response();
+            response_cnt++;
+        end
+        @(posedge clk);
+        if(response_cnt != REQ_CNT) begin
+            $write("[ERROR]]Fail, Missing Response HandShake\n");
+            $finish;
+        end else begin
+            test_done = 1'b1;
+        end
+    endtask
 
     initial begin
         $display("====================Start Simulation!====================");
