@@ -11,7 +11,7 @@ package VPU_PKG;
     localparam  ELEM_WIDTH                  = 16; // BF16
     localparam  ELEM_PER_DIM_CNT            = (DIM_SIZE/ELEM_WIDTH);
 
-    /* VPU Instruction Config */
+    /* VPU-Instruction Config */
     localparam  INSTR_WIDTH                 = 128;
     localparam  INSTR_NUM                   = 14;
     localparam  OPCODE_WIDTH                = 8;
@@ -24,6 +24,7 @@ package VPU_PKG;
     localparam  TOTAL_OPERAND_CNT           = SRC_OPERAND_CNT + DST_OPERAND_CNT;
     localparam  MAX_DELAY                   = 8;
     localparam  MAX_DELAY_LG2               = $clog2(MAX_DELAY);
+    localparam  STREAM_ID_WIDTH             = 2;
 
     /* SRAM Config */
     localparam  SRAM_BANK_CNT               = 4;
@@ -36,21 +37,18 @@ package VPU_PKG;
     localparam  SRAM_BANK_SIZE_LG2          = $clog2(SRAM_BANK_SIZE);
     localparam  SRAM_SIZE                   = SRAM_BANK_CNT * SRAM_BANK_SIZE;
     localparam  SRAM_SIZE_LG2               = $clog2(SRAM_SIZE);
+    localparam  SRAM_READ_PORT_CNT          = 3;
+    localparam  SRAM_WRITE_PORT_CNT         = 1;
 
     /* VPU Component Config */
-    localparam  SRAM_R_PORT_CNT             = SRC_OPERAND_CNT;
-    localparam  SRAM_W_PORT_CNT             = DST_OPERAND_CNT;
-    localparam  REQ_FIFO_DEPTH              = 16;
-    localparam  REQ_FIFO_DEPTH_LG2          = $clog2(REQ_FIFO_DEPTH);
     localparam  VLANE_CNT                   = 16;
     localparam  EXEC_CNT                    = ELEM_PER_DIM_CNT/VLANE_CNT;
     localparam  EXEC_CNT_LG2                = $clog2(EXEC_CNT);
-    localparam  OPERAND_QUEUE_DEPTH         = 2;
-    localparam  DECODE_CYCLE                = 2;
+    localparam  EXEC_UNIT_DATA_WIDTH        = VLANE_CNT * OPERAND_WIDTH;
     localparam  DWIDTH_PER_EXEC             = VLANE_CNT * OPERAND_WIDTH;
 
     //-----------------------------------------------------
-    // Cache Address Mapping
+    // SRAM Address Mapping
     //    -----------------------------------------
     //    |      TAG      | BANK_ID | DIM_OFFSET |
     //    -----------------------------------------
@@ -75,7 +73,6 @@ package VPU_PKG;
 
     // Opcode
     typedef enum logic [7:0] { 
-        // BF16
         VPU_H2D_REQ_OPCODE_FADD             = 8'h01, 
         VPU_H2D_REQ_OPCODE_FSUB             = 8'h02, 
         VPU_H2D_REQ_OPCODE_FMUL             = 8'h03,
@@ -90,16 +87,7 @@ package VPU_PKG;
         VPU_H2D_REQ_OPCODE_FEXP             = 8'h0C,
         VPU_H2D_REQ_OPCODE_FSQRT            = 8'h0D,
         VPU_H2D_REQ_OPCODE_FRECIP           = 8'h0E
-
-        //Convert
-        /*...*/
     } vpu_h2d_req_opcode_t;
-
-
-    typedef struct {
-        logic   [MAX_DELAY_LG2-1:0]         delay;
-        logic   [SRAM_R_PORT_CNT-1:0]       src_cnt;                          
-    } delay_and_src_cnt_t;
 
     // VPU Instruction
     typedef struct packed {
@@ -128,11 +116,6 @@ package VPU_PKG;
         logic                               fp_sum_r; //LSB
     } vpu_exec_fp_op_req_t; // 10-bit
 
-    typedef struct packed {
-        logic                               fp_sum_r;
-        logic                               fp_max_r;
-    } vpu_exec_red_op_req_t;
-
     typedef enum logic {
         EXEC,
         RED
@@ -140,13 +123,12 @@ package VPU_PKG;
 
     typedef struct packed {
         vpu_exec_fp_op_req_t                fp_req;
-        //vpu_exec_red_op_req_t               red_req;
         vpu_exec_op_type_t                  op_type;
     } vpu_exec_req_t; // 16-bit
 
     // VPU Instruction
     typedef struct packed {
-        logic   [SRAM_R_PORT_CNT-1:0]       rvalid;
+        logic   [SRAM_READ_PORT_CNT-1:0]    rvalid;
         logic   [OPERAND_ADDR_WIDTH-1:0]    raddr0;
         logic   [OPERAND_ADDR_WIDTH-1:0]    raddr1;
         logic   [OPERAND_ADDR_WIDTH-1:0]    raddr2;

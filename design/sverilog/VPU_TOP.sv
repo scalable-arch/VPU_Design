@@ -2,7 +2,6 @@
 
 module VPU_TOP
 #(
-
 )
 (
     input   wire                            clk,
@@ -10,6 +9,7 @@ module VPU_TOP
 
     // VPU REQUEST INTERFACE
     VPU_REQ_IF.device                       vpu_req_if,
+    VPU_RESPONSE_IF.device                  vpu_response_if,
 
     // SRAM PORT INTERFACE
     VPU_SRC_PORT_IF.host                    vpu_src0_port_if,
@@ -20,11 +20,12 @@ module VPU_TOP
     import VPU_PKG::*;
 
     vpu_instr_decoded_t                     instr_decoded;
+    wire    [STREAM_ID_WIDTH-1:0]           stream_id;
     wire                                    ctrl_ready;
     wire                                    ctrl_valid;
     wire                                    opget_start;
     wire                                    opget_done;
-    wire    [DWIDTH_PER_EXEC-1:0]           operand_fifo_rdata[SRAM_R_PORT_CNT];
+    wire    [EXEC_UNIT_DATA_WIDTH-1:0]      operand_fifo_rdata[SRAM_READ_PORT_CNT];
     wire    [SRC_OPERAND_CNT-1:0]           operand_fifo_rden;
 
     wire                                    exec_start;
@@ -43,6 +44,7 @@ module VPU_TOP
         .rst_n                              (rst_n),
         .vpu_req_if                         (vpu_req_if),
         .instr_decoded_o                    (instr_decoded),
+        .stream_id_o                        (stream_id),
         .ctrl_ready_i                       (ctrl_ready),
         .ctrl_valid_o                       (ctrl_valid)
     );
@@ -55,7 +57,7 @@ module VPU_TOP
         .ctrl_valid_i                       (ctrl_valid),
         .ctrl_ready_o                       (ctrl_ready),
         .instr_decoded_i                    (instr_decoded),
-
+        .stream_id_i                        (stream_id),
         .opget_start_o                      (opget_start),
         .opget_done_i                       (opget_done),
         .operand_queue_rden_o               (operand_fifo_rden),
@@ -65,7 +67,9 @@ module VPU_TOP
 
         .wb_data_valid_o                    (wb_data_valid),
         .wb_start_o                         (wb_start),
-        .wb_done_i                          (wb_done)
+        .wb_done_i                          (wb_done),
+
+        .vpu_response_if                    (vpu_response_if)
     );
 
     VPU_EXEC_UNIT #(
