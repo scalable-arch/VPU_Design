@@ -7,7 +7,8 @@ module VPU_SRC_PORT
     input   wire                                        clk,
     input   wire                                        rst_n,
 
-    input   VPU_PKG::vpu_instr_decoded_t                instr_decoded_i,
+    input   [VPU_PKG::SRAM_READ_PORT_CNT-1:0]           operand_rvalid_i,
+    input   [VPU_PKG::OPERAND_ADDR_WIDTH-1:0]           src_addr_i[VPU_PKG::SRC_OPERAND_CNT],
     // From/To VPU_CONTROLLER
     input   wire                                        start_i,
     output  logic                                       done_o,
@@ -20,7 +21,7 @@ module VPU_SRC_PORT
     VPU_SRC_PORT_IF.host                                vpu_src2_port_if
 );
     import VPU_PKG::*;
-
+    
     logic   [SRAM_READ_PORT_CNT-1:0]                done;
     logic   [SRAM_DATA_WIDTH-1:0]                   operand_fifo_wdata[SRAM_READ_PORT_CNT];
     logic                                           operand_fifo_wren[SRAM_READ_PORT_CNT];
@@ -63,8 +64,8 @@ module VPU_SRC_PORT
         .clk                                        (clk),
         .rst_n                                      (rst_n),
 
-        .rvalid_i                                   (instr_decoded_i.rvalid[0]),
-        .raddr_i                                    (instr_decoded_i.raddr0),
+        .rvalid_i                                   (operand_rvalid_i[0]),
+        .raddr_i                                    (src_addr_i[0]),
 
         .start_i                                    (start_i),
         .done_o                                     (done[0]),
@@ -81,8 +82,8 @@ module VPU_SRC_PORT
         .clk                                        (clk),
         .rst_n                                      (rst_n),
 
-        .rvalid_i                                   (instr_decoded_i.rvalid[1]),
-        .raddr_i                                    (instr_decoded_i.raddr1),
+        .rvalid_i                                   (operand_rvalid_i[1]),
+        .raddr_i                                    (src_addr_i[1]),
 
         .start_i                                    (start_i),
         .done_o                                     (done[1]),
@@ -99,8 +100,8 @@ module VPU_SRC_PORT
         .clk                                        (clk),
         .rst_n                                      (rst_n),
 
-        .rvalid_i                                   (instr_decoded_i.rvalid[2]),
-        .raddr_i                                    (instr_decoded_i.raddr2),
+        .rvalid_i                                   (operand_rvalid_i[2]),
+        .raddr_i                                    (src_addr_i[2]),
 
         .start_i                                    (start_i),
         .done_o                                     (done[2]),

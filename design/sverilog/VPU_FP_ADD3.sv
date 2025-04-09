@@ -54,8 +54,14 @@ module VPU_FP_ADD3
             tvalid                          = result_tvalid & !flag;
         end
 
-        if(result_tvalid & result_tvalid_delayed) begin
-            flag_n                          = !flag;
+        if(flag) begin
+            if(!result_tvalid & result_tvalid_delayed) begin
+                flag_n                          = 1'b0;
+            end
+        end else begin
+            if(result_tvalid & result_tvalid_delayed) begin
+                flag_n                          = 1'b1;
+            end
         end
 
         if(result_tvalid) begin // second_stage
@@ -75,7 +81,8 @@ module VPU_FP_ADD3
     SAL_FIFO
     #(
         .DEPTH_LG2                          ($clog2(ACCEPTANCE_CAPABILITY)),
-        .DATA_WIDTH                         (OPERAND_WIDTH)
+        .DATA_WIDTH                         (OPERAND_WIDTH),
+        .RDATA_FF_OUT                       (1)
     )
     operand_2_queue
     (

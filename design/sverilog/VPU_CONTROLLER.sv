@@ -9,20 +9,21 @@ module VPU_CONTROLLER
     input   wire                            rst_n,
 
     input   wire                            ctrl_valid_i,
-    input   VPU_PKG::vpu_instr_decoded_t    instr_decoded_i,
-    input   [VPU_PKG::STREAM_ID_WIDTH-1:0]  stream_id_i,
+    input   VPU_PKG::vpu_h2d_req_instr_t    instr_latch_i,
+    input   wire                            is_sum_i,
+    input   wire                            is_reduction_i,
+    input   wire [VPU_PKG::SRAM_READ_PORT_CNT-1:0]  operand_rvalid_i,
+    input   wire [VPU_PKG::STREAM_ID_WIDTH-1:0]     stream_id_i,
     output  wire                            ctrl_ready_o,
     
     // OPGET SubState
     output  wire                            opget_start_o,
     input   wire                            opget_done_i,
-    
-    output  wire    [VPU_PKG::SRC_OPERAND_CNT-1:0]   operand_queue_rden_o,
+    output  wire    [VPU_PKG::SRC_OPERAND_CNT-1:0]  operand_queue_rden_o,
 
     // Execution SubState
     output  wire                            exec_start_o,
     input   wire                            exec_done_i,
-
     // WB SubState
     output  wire                            wb_data_valid_o,
     output  wire                            wb_start_o,
@@ -38,7 +39,6 @@ module VPU_CONTROLLER
     localparam  S_WB                        = 2'b11;
 
     logic   [1:0]                           state,  state_n;
-
     logic                                   ready;
     logic                                   opget_start, opget_start_n;
     logic                                   exec_start, exec_start_n;
@@ -103,7 +103,7 @@ module VPU_CONTROLLER
                 operand_queue_rden_n        = 1'b0;
 
                 if(exec_done_i) begin
-                    if(instr_decoded_i.op_func.op_type == RED) begin
+                    if(is_reduction_i) begin
                         wb_data_valid               = 1'b1;
                         operand_queue_rden_n        = 1'b1;
                         wb_start                    = 1'b1;
@@ -142,9 +142,10 @@ module VPU_CONTROLLER
     genvar k;
     generate
         for (k=0; k < SRAM_READ_PORT_CNT; k=k+1) begin : PACKING_OPERAND_QUEUE_RDEN
-            assign operand_queue_rden_o[k]  = (operand_queue_rden & instr_decoded_i.rvalid[k]);
+            assign operand_queue_rden_o[k]  = (operand_queue_rden & operand_rvalid_i[k]);
         end
     endgenerate
+
     assign  vpu_response_if.resp_stream_id  = stream_id_i;
     assign  vpu_response_if.resp_valid      = response_valid;
 endmodule

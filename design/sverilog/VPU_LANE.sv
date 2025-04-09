@@ -9,7 +9,7 @@ module VPU_LANE
     input   wire                                    rst_n,
 
     input   wire                                    start_i,
-    VPU_PKG::vpu_exec_req_t                         op_func_i,
+    VPU_PKG::vpu_h2d_req_opcode_t                   opcode_i,
     //input   wire    [VPU_PKG::MAX_DELAY_LG2-1:0]    delay_i,
     input   wire    [VPU_PKG::OPERAND_WIDTH-1:0]    operand_i[VPU_PKG::SRC_OPERAND_CNT],
     input   wire    [VPU_PKG::SRC_OPERAND_CNT-1:0]  operand_valid_i,
@@ -48,46 +48,46 @@ module VPU_LANE
     wire                                    fp_recip_done;
     
     always_comb begin
-        if((op_func_i.fp_req.fp_add2_r) || (op_func_i.fp_req.fp_sub_r)) begin
+        if(((opcode_i == VPU_H2D_REQ_OPCODE_FADD) || (opcode_i == VPU_H2D_REQ_OPCODE_FSUB))) begin
             dout                            = fp_add2_dout;
             done                            = fp_add2_done;
-        end else if(op_func_i.fp_req.fp_add3_r) begin
+        end else if((opcode_i == VPU_H2D_REQ_OPCODE_FADD3)) begin
             dout                            = fp_add3_dout;
             done                            = fp_add3_done;
         end
-        else if((op_func_i.fp_req.fp_mul_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FMUL)) begin
             dout                            = fp_mul_dout;
             done                            = fp_mul_done;
         end
-        else if((op_func_i.fp_req.fp_div_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FDIV)) begin
             dout                            = fp_div_dout;
             done                            = fp_div_done;
         end
-        else if((op_func_i.fp_req.fp_max2_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FMAX2)) begin
             dout                            = fp_max2_dout;
             done                            = fp_max2_done;
         end
-        else if((op_func_i.fp_req.fp_max3_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FMAX3)) begin
             dout                            = fp_max3_dout;
             done                            = fp_max3_done;
         end
-        else if((op_func_i.fp_req.fp_avg2_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FAVG2)) begin
             dout                            = fp_avg2_dout;
             done                            = fp_avg2_done;
         end
-        else if((op_func_i.fp_req.fp_avg3_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FAVG3)) begin
             dout                            = fp_avg3_dout;
             done                            = fp_avg3_done;
         end
-        else if((op_func_i.fp_req.fp_sqrt_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FSQRT)) begin
             dout                            = fp_sqrt_dout;
             done                            = fp_sqrt_done;
         end 
-        else if((op_func_i.fp_req.fp_exp_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FEXP)) begin
             dout                            = fp_exp_dout;
             done                            = fp_exp_done;
         end
-        else if((op_func_i.fp_req.fp_recip_r)) begin
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FRECIP)) begin
             dout                            = fp_recip_dout;
             done                            = fp_recip_done;
         end
@@ -106,8 +106,8 @@ module VPU_LANE
         .rst_n                              (rst_n),
         .operand_0                          (operand_i[0]),
         .operand_1                          (operand_i[1]),
-        .start_i                            (start_i & (op_func_i.fp_req.fp_add2_r | op_func_i.fp_req.fp_sub_r)),
-        .sub                                (op_func_i.fp_req.fp_sub_r),
+        .start_i                            (start_i & ((opcode_i == VPU_H2D_REQ_OPCODE_FADD) || (opcode_i == VPU_H2D_REQ_OPCODE_FSUB))),
+        .sub                                (opcode_i == VPU_H2D_REQ_OPCODE_FSUB),
         .result_o                           (fp_add2_dout),
         .done_o                             (fp_add2_done)
     );
@@ -122,7 +122,7 @@ module VPU_LANE
         .operand_0                          (operand_i[0]),
         .operand_1                          (operand_i[1]),
         .operand_2                          (operand_i[2]),
-        .start_i                            (start_i & (op_func_i.fp_req.fp_add3_r)),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FADD3)),
         .result_o                           (fp_add3_dout),
         .done_o                             (fp_add3_done)
     );
@@ -136,7 +136,7 @@ module VPU_LANE
         .rst_n                              (rst_n),
         .op_0                               (operand_i[0]),
         .op_1                               (operand_i[1]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_mul_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FMUL)),
         .result_o                           (fp_mul_dout),
         .done_o                             (fp_mul_done)
     );
@@ -150,7 +150,7 @@ module VPU_LANE
         .rst_n                              (rst_n),
         .op_0                               (operand_i[0]),
         .op_1                               (operand_i[1]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_div_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FDIV)),
         .result_o                           (fp_div_dout),
         .done_o                             (fp_div_done)
     );
@@ -164,7 +164,7 @@ module VPU_LANE
         .rst_n                              (rst_n),
         .operand_0                          (operand_i[0]),
         .operand_1                          (operand_i[1]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_max2_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FMAX2)),
         .result_o                           (fp_max2_dout),
         .done_o                             (fp_max2_done)
     );
@@ -179,7 +179,7 @@ module VPU_LANE
         .operand_0                          (operand_i[0]),
         .operand_1                          (operand_i[1]),
         .operand_2                          (operand_i[2]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_max3_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FMAX3)),
         .result_o                           (fp_max3_dout),
         .done_o                             (fp_max3_done)
     );
@@ -193,7 +193,7 @@ module VPU_LANE
         .rst_n                              (rst_n),
         .operand_0                          (operand_i[0]),
         .operand_1                          (operand_i[1]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_avg2_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FAVG2)),
         .result_o                           (fp_avg2_dout),
         .done_o                             (fp_avg2_done)
     );
@@ -208,7 +208,7 @@ module VPU_LANE
         .operand_0                          (operand_i[0]),
         .operand_1                          (operand_i[1]),
         .operand_2                          (operand_i[2]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_avg3_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FAVG3)),
         .result_o                           (fp_avg3_dout),
         .done_o                             (fp_avg3_done)
     );
@@ -221,7 +221,7 @@ module VPU_LANE
         .clk                                (clk),
         .rst_n                              (rst_n),
         .op_0                               (operand_i[0]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_sqrt_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FSQRT)),
         .result_o                           (fp_sqrt_dout),
         .done_o                             (fp_sqrt_done)
     );
@@ -234,7 +234,7 @@ module VPU_LANE
         .clk                                (clk),
         .rst_n                              (rst_n),
         .op_0                               (operand_i[0]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_exp_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FEXP)),
         .result_o                           (fp_exp_dout),
         .done_o                             (fp_exp_done)
     );
@@ -247,7 +247,7 @@ module VPU_LANE
         .clk                                (clk),
         .rst_n                              (rst_n),
         .op_0                               (operand_i[0]),
-        .start_i                            (start_i & op_func_i.fp_req.fp_recip_r),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FRECIP)),
         .result_o                           (fp_recip_dout),
         .done_o                             (fp_recip_done)
     );
