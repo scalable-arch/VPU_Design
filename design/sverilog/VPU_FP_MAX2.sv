@@ -40,7 +40,8 @@ module VPU_FP_MAX2
     SAL_FIFO
     #(
         .DEPTH_LG2                      (1),
-        .DATA_WIDTH                     (OPERAND_WIDTH)
+        .DATA_WIDTH                     (OPERAND_WIDTH),
+        .RDATA_FF_OUT                   (1)
     )
     operand_0_queue
     (

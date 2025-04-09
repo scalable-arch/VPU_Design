@@ -9,8 +9,8 @@ module VPU_REDUCTION_UNIT
     input   wire                                    rst_n,
 
     input   wire                                    start_i,
-    input   VPU_PKG::vpu_exec_req_t                 op_func_i,                 
- 
+    input   VPU_PKG::vpu_h2d_req_opcode_t           opcode_i,                 
+    input   wire                                    is_sum_i,
     input   wire    [VPU_PKG::DWIDTH_PER_EXEC-1:0]  operand_i,
 
     output  wire    [VPU_PKG::DWIDTH_PER_EXEC-1:0]  dout_o,
@@ -38,7 +38,8 @@ module VPU_REDUCTION_UNIT
     wire                                            fp_sum_done;
     wire                                            fp_max_done;
     logic                                           fp_sum_start, fp_max_start;
-    logic   [OPERAND_WIDTH-1:0]                     buff;
+    logic   [OPERAND_WIDTH-1:0]                     fp_sum_buff;
+    logic   [OPERAND_WIDTH-1:0]                     fp_max_buff;
 
     always_ff @(posedge clk) begin
         if(!rst_n) begin
@@ -46,14 +47,18 @@ module VPU_REDUCTION_UNIT
             fp_max_itmd_done_delayed                <= 1'b0;
             fp_sum_done_delayed                     <= 1'b0;
             fp_max_done_delayed                     <= 1'b0;
-            buff                                    <= {OPERAND_WIDTH{1'b0}};
+            fp_sum_buff                             <= {OPERAND_WIDTH{1'b0}};
+            fp_max_buff                             <= {OPERAND_WIDTH{1'b0}};
         end else begin
             fp_sum_itmd_done_delayed                <= fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2];
             fp_max_itmd_done_delayed                <= fp_max_itmd_done[ELEM_CNT_PER_EXEC-2];
             fp_sum_done_delayed                     <= fp_sum_done;
             fp_max_done_delayed                     <= fp_max_done;
-            if(fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2] | fp_max_itmd_done[ELEM_CNT_PER_EXEC-2]) begin
-                buff                                <= itmd_dout;
+            if(fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2]) begin
+                fp_sum_buff                         <= fp_sum_itmd_res[ELEM_CNT_PER_EXEC-2];
+            end
+            if(fp_max_itmd_done[ELEM_CNT_PER_EXEC-2]) begin
+                fp_max_buff                         <= fp_max_itmd_res[ELEM_CNT_PER_EXEC-2];
             end
         end
     end
@@ -61,7 +66,7 @@ module VPU_REDUCTION_UNIT
     always_comb begin
         fp_sum_start                                = 1'b0;
         fp_max_start                                = 1'b0;
-        if(op_func_i.fp_req.fp_sum_r) begin
+        if(is_sum_i) begin
             done                                    = fp_sum_done;
             fp_sum_start                            = fp_sum_itmd_done[ELEM_CNT_PER_EXEC-2] & fp_sum_itmd_done_delayed;
         end else begin
@@ -84,7 +89,7 @@ module VPU_REDUCTION_UNIT
                         .rst_n                      (rst_n),
                         .operand_0                  (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
                         .operand_1                  (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
-                        .start_i                    (start_i & op_func_i.fp_req.fp_sum_r),
+                        .start_i                    (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FSUM)),
                         .sub                        (8'h00),
                         .result_o                   (fp_sum_itmd_res[i]),
                         .done_o                     (fp_sum_itmd_done[i])
@@ -99,7 +104,7 @@ module VPU_REDUCTION_UNIT
                         .rst_n                      (rst_n),
                         .operand_0                  (operand_i[OPERAND_WIDTH*(i*2) +: OPERAND_WIDTH]),
                         .operand_1                  (operand_i[OPERAND_WIDTH*((i*2)+1) +: OPERAND_WIDTH]),
-                        .start_i                    (start_i & op_func_i.fp_req.fp_max_r),
+                        .start_i                    (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FMAX)),
                         .result_o                   (fp_max_itmd_res[i]),
                         .done_o                     (fp_max_itmd_done[i])
                     );
@@ -147,8 +152,8 @@ module VPU_REDUCTION_UNIT
     ) ll_fp_add2 (
         .clk                                        (clk),
         .rst_n                                      (rst_n),
-        .operand_0                                  (buff),
-        .operand_1                                  (itmd_dout),
+        .operand_0                                  (fp_sum_buff),
+        .operand_1                                  (fp_sum_itmd_res[ELEM_CNT_PER_EXEC-2]),
         .start_i                                    (fp_sum_start),
         .sub                                        (8'h00),
         .result_o                                   (fp_sum_res),
@@ -159,25 +164,23 @@ module VPU_REDUCTION_UNIT
     ) ll_fp_max2 (
         .clk                                        (clk),
         .rst_n                                      (rst_n),
-        .operand_0                                  (buff),
-        .operand_1                                  (itmd_dout),
+        .operand_0                                  (fp_max_buff),
+        .operand_1                                  (fp_max_itmd_res[ELEM_CNT_PER_EXEC-2]),
         .start_i                                    (fp_max_start),
         .result_o                                   (fp_max_res),
         .done_o                                     (fp_max_done)
     );
 
     always_comb begin
-        itmd_dout                                   = {OPERAND_WIDTH{1'b0}};
+        //itmd_dout                                   = {OPERAND_WIDTH{1'b0}};
         dout                                        = {OPERAND_WIDTH{1'b0}};
-        if(op_func_i.fp_req.fp_sum_r) begin
-            itmd_dout                               = fp_sum_itmd_res[ELEM_CNT_PER_EXEC-2];
+        if(is_sum_i) begin
+            //itmd_dout                               = fp_sum_itmd_res[ELEM_CNT_PER_EXEC-2];
             dout                                    = fp_sum_res;
-           
         end
-        else if(op_func_i.fp_req.fp_max_r) begin
-            itmd_dout                               = fp_max_itmd_res[ELEM_CNT_PER_EXEC-2];
+        else begin
+            //itmd_dout                               = fp_max_itmd_res[ELEM_CNT_PER_EXEC-2];
             dout                                    = fp_max_res;
-            
         end
     end
 

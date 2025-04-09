@@ -9,7 +9,9 @@ module VPU_EXEC_UNIT
     input   wire                                        rst_n,
 
     input   wire                                        start_i,
-    input   VPU_PKG::vpu_exec_req_t                     op_func_i,
+    input   VPU_PKG::vpu_h2d_req_opcode_t               opcode_i,
+    input   wire                                        is_reduction_i,
+    input   wire                                        is_sum_i,
 
     input   wire    [VPU_PKG::EXEC_UNIT_DATA_WIDTH-1:0] operand_i[VPU_PKG::SRC_OPERAND_CNT],
     input   wire    [VPU_PKG::SRC_OPERAND_CNT-1:0]      operand_valid_i,
@@ -49,7 +51,7 @@ module VPU_EXEC_UNIT
                 .clk                                    (clk),
                 .rst_n                                  (rst_n),
                 .start_i                                (start_i),
-                .op_func_i                              (op_func_i),
+                .opcode_i                               (opcode_i),
                 .operand_i                              (operand[j]),
                 .operand_valid_i                        (operand_valid_i),
                 .dout_o                                 (exec_dout[(j*OPERAND_WIDTH)+:OPERAND_WIDTH]),
@@ -63,7 +65,8 @@ module VPU_EXEC_UNIT
         .clk                                            (clk),
         .rst_n                                          (rst_n),
         .start_i                                        (start_i),
-        .op_func_i                                      (op_func_i),
+        .opcode_i                                       (opcode_i),
+        .is_sum_i                                       (is_sum_i),
         .operand_i                                      (operand_i[0]),
         .dout_o                                         (red_dout),
         .done_o                                         (red_done)
@@ -80,14 +83,14 @@ module VPU_EXEC_UNIT
     end
 
     always_comb begin
-        dout_n                                            = {EXEC_UNIT_DATA_WIDTH{1'b0}};
-        done_n                                            = 1'b0;
-        if(op_func_i.op_type==EXEC) begin
-            dout_n                                        = exec_dout;
-            done_n                                        = exec_done[0];
+        dout_n                                          = {EXEC_UNIT_DATA_WIDTH{1'b0}};
+        done_n                                          = 1'b0;
+        if(is_reduction_i) begin
+            dout_n                                      = red_dout;
+            done_n                                      = red_done;
         end else begin
-            dout_n                                        = red_dout;
-            done_n                                        = red_done;
+            dout_n                                      = exec_dout;
+            done_n                                      = exec_done[0];
         end
     end
     assign  dout_o                                      = dout_n;

@@ -10,9 +10,10 @@ module VPU_WB_UNIT
     input   wire                            start_i,
     output  wire                            done_o,
     // From VPU_LANE
+    input   wire                            is_reduction_i,
     input   wire                            wb_data_valid_i,
-    input   wire [VPU_PKG::EXEC_UNIT_DATA_WIDTH-1:0] wb_data_i,
-    input   VPU_PKG::vpu_instr_decoded_t    instr_decoded_i,
+    input   wire [VPU_PKG::EXEC_UNIT_DATA_WIDTH-1:0]    wb_data_i,
+    input   wire [VPU_PKG::OPERAND_ADDR_WIDTH-1:0]      dst_addr_i,
     // SRAM_W_PORT
     VPU_DST_PORT_IF.host                    vpu_dst0_port_if
 );
@@ -53,12 +54,12 @@ module VPU_WB_UNIT
             wlast                           <= wlast_n;
             cnt                             <= cnt_n;
             if(wb_data_valid_i) begin
-                if(instr_decoded_i.op_func.op_type == EXEC) begin
-                    wb_data[cnt]            <= wb_data_i;
-                end else begin
+                if(is_reduction_i) begin
                     for(int i = 0; i < EXEC_CNT; i++) begin
                         wb_data[i]          <= wb_data_i;
                     end
+                end else begin
+                    wb_data[cnt]            <= wb_data_i;
                 end
             end
         end
@@ -102,8 +103,8 @@ module VPU_WB_UNIT
     end
 
     assign  vpu_dst0_port_if.req            = req;
-    assign  vpu_dst0_port_if.wid            = get_bank_id(instr_decoded_i.waddr);
-    assign  vpu_dst0_port_if.addr           = get_bank_id(instr_decoded_i.waddr);
+    assign  vpu_dst0_port_if.wid            = get_bank_id(dst_addr_i);
+    assign  vpu_dst0_port_if.addr           = get_waddr(dst_addr_i);
     assign  vpu_dst0_port_if.web            = web;
     assign  vpu_dst0_port_if.wlast          = wlast;
     assign  vpu_dst0_port_if.wdata          = wdata;
