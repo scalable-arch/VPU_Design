@@ -27,16 +27,23 @@ module VPU_SRC_PORT
     logic                                           operand_fifo_wren[SRAM_READ_PORT_CNT];
     logic   [SRAM_DATA_WIDTH-1:0]                   operand_fifo_rdata[SRAM_READ_PORT_CNT];
     // Operand Buffers
-    logic   [SRAM_DATA_WIDTH-1:0]                   operand_buff[SRAM_READ_PORT_CNT];
+    logic   [(SRAM_DATA_WIDTH/2)-1:0]               operand_buff_0[SRAM_READ_PORT_CNT];
+    logic   [(SRAM_DATA_WIDTH/2)-1:0]               operand_buff_0_n[SRAM_READ_PORT_CNT];
+    logic   [(SRAM_DATA_WIDTH/2)-1:0]               operand_buff_1[SRAM_READ_PORT_CNT];
+    logic   [(SRAM_DATA_WIDTH/2)-1:0]               operand_buff_1_n[SRAM_READ_PORT_CNT];
     // Execution Cycle
     logic   [EXEC_CNT_LG2-1:0]                      cnt, cnt_n;
 
     always_ff @(posedge clk) begin
         for(int i=0; i<SRAM_READ_PORT_CNT; i++) begin
             if(!rst_n) begin
-                operand_buff[i]                     <= {SRAM_DATA_WIDTH{1'b0}};
-            end else if(operand_fifo_wren[i]) begin
-                operand_buff[i]                     <= operand_fifo_wdata[i];
+                operand_buff_0[i]                     <= {(SRAM_DATA_WIDTH/2){1'b0}};
+                operand_buff_1[i]                     <= {(SRAM_DATA_WIDTH/2){1'b0}};
+            end else begin
+                operand_buff_0[i]                       <= operand_buff_0_n[i];
+                operand_buff_1[i]                       <= operand_buff_1_n[i]; 
+                // operand_buff_0[i]                     <= operand_fifo_wdata[i][0+:(SRAM_DATA_WIDTH/2)];
+                // operand_buff_1[i]                     <= operand_fifo_wdata[i][(SRAM_DATA_WIDTH/2)+:(SRAM_DATA_WIDTH/2)];
             end
         end
     end
@@ -116,13 +123,16 @@ module VPU_SRC_PORT
     generate
         for(l=0; l < SRAM_READ_PORT_CNT; l=l+1) begin
             always_comb begin
-                if(cnt == 'd0) begin
-                    operand_fifo_rdata[l]           = operand_buff[l][0+:EXEC_UNIT_DATA_WIDTH];
-                end else begin
-                    operand_fifo_rdata[l]           = operand_buff[l][(EXEC_UNIT_DATA_WIDTH)+:EXEC_UNIT_DATA_WIDTH];
+                operand_buff_0_n[l]                    = operand_buff_0[l];
+                operand_buff_1_n[l]                    = operand_buff_1[l];
+                if(operand_fifo_wren[l]) begin
+                    operand_buff_0_n[l]             = operand_fifo_wdata[l][0+:(SRAM_DATA_WIDTH/2)];
+                    operand_buff_1_n[l]             = operand_fifo_wdata[l][(SRAM_DATA_WIDTH/2)+:(SRAM_DATA_WIDTH/2)];
+                end else if(cnt_n == 'd1) begin
+                    operand_buff_0_n[l]             =  operand_buff_1[l];
                 end
             end
-            assign  operand_fifo_rdata_o[l]         = operand_fifo_rdata[l];
+            assign  operand_fifo_rdata_o[l]         = operand_buff_0[l];
         end
     endgenerate
 
