@@ -37,13 +37,11 @@ module VPU_SRC_PORT
     always_ff @(posedge clk) begin
         for(int i=0; i<SRAM_READ_PORT_CNT; i++) begin
             if(!rst_n) begin
-                operand_buff_0[i]                     <= {(SRAM_DATA_WIDTH/2){1'b0}};
-                operand_buff_1[i]                     <= {(SRAM_DATA_WIDTH/2){1'b0}};
+                operand_buff_0[i]                   <= {(SRAM_DATA_WIDTH/2){1'b0}};
+                operand_buff_1[i]                   <= {(SRAM_DATA_WIDTH/2){1'b0}};
             end else begin
-                operand_buff_0[i]                       <= operand_buff_0_n[i];
-                operand_buff_1[i]                       <= operand_buff_1_n[i]; 
-                // operand_buff_0[i]                     <= operand_fifo_wdata[i][0+:(SRAM_DATA_WIDTH/2)];
-                // operand_buff_1[i]                     <= operand_fifo_wdata[i][(SRAM_DATA_WIDTH/2)+:(SRAM_DATA_WIDTH/2)];
+                operand_buff_0[i]                   <= operand_buff_0_n[i];
+                operand_buff_1[i]                   <= operand_buff_1_n[i]; 
             end
         end
     end
@@ -123,8 +121,8 @@ module VPU_SRC_PORT
     generate
         for(l=0; l < SRAM_READ_PORT_CNT; l=l+1) begin
             always_comb begin
-                operand_buff_0_n[l]                    = operand_buff_0[l];
-                operand_buff_1_n[l]                    = operand_buff_1[l];
+                operand_buff_0_n[l]                 = operand_buff_0[l];
+                operand_buff_1_n[l]                 = operand_buff_1[l];
                 if(operand_fifo_wren[l]) begin
                     operand_buff_0_n[l]             = operand_fifo_wdata[l][0+:(SRAM_DATA_WIDTH/2)];
                     operand_buff_1_n[l]             = operand_fifo_wdata[l][(SRAM_DATA_WIDTH/2)+:(SRAM_DATA_WIDTH/2)];
