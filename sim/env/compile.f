@@ -1,0 +1,9 @@
++incdir+${VPU_SIM_HOME}/env
++incdir+${VPU_SIM_HOME}/env/lib
++incdir+${VPU_SIM_HOME}/env/test
++incdir+${VPU_SIM_HOME}/env/top
++incdir+${VPU_HOME}/design/sverilog
+${VPU_HOME}/design/sverilog/VPU_IF.sv
+${VPU_HOME}/design/sverilog/VPU_PKG.svh
+${VPU_HOME}/sim/env/top/vpu_uvm_pkg.sv
+${VPU_HOME}/sim/env/top/top.sv
