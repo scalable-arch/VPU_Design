@@ -1,6 +1,33 @@
 `ifndef RSP_AGENT
 `define RSP_AGENT
+class simple_rsp_responder extends uvm_component;
+    `uvm_component_utils(simple_rsp_responder)
 
+    vpu_rsp_if  rsp_vif;
+
+    function new(string name = "simple_rsp_responder", uvm_component parent);
+      super.new(name, parent);
+    endfunction
+
+    virtual function void build_phase(uvm_phase phase);
+      super.build_phase(phase);
+      if (!uvm_config_db#(vpu_rsp_if)::get(this, "", "rsp_vif", rsp_vif))
+          `uvm_fatal("VIF_ERR", "Virtual interface for simple_rsp_responder not set");
+    endfunction
+
+    virtual task run_phase(uvm_phase phase);
+      forever begin
+        wait(rsp_vif.rst_n !== 0);
+        do begin
+          @(rsp_vif.drvClk);     
+        end while (!rsp_vif.drvClk.resp_valid);
+        @(posedge rsp_vif.drvClk);
+          rsp_vif.drvClk.resp_ready <= 1'b1;
+        @(posedge rsp_vif.drvClk);
+          rsp_vif.drvClk.resp_ready <= 1'b0;
+      end
+    endtask
+endclass
 
 class rsp_agent extends uvm_agent;
   `uvm_component_utils(rsp_agent);
@@ -37,33 +64,5 @@ class rsp_agent extends uvm_agent;
   endfunction: end_of_elaboration_phase
 endclass
 
-class simple_rsp_responder extends uvm_component;
-    `uvm_component_utils(simple_rsp_responder)
-
-    vpu_rsp_if  rsp_vif;
-
-    function new(string name = "simple_rsp_responder", uvm_component parent);
-      super.new(name, parent);
-    endfunction
-
-    virtual function void build_phase(uvm_phase phase);
-      super.build_phase(phase);
-      if (!uvm_config_db#(vpu_rsp_if)::get(this, "", "rsp_vif", rsp_vif))
-          `uvm_fatal("VIF_ERR", "Virtual interface for simple_rsp_responder not set");
-    endfunction
-
-    virtual task run_phase(uvm_phase phase);
-      forever begin
-        wait(rsp_vif.rst_n !== 0);
-        do begin
-          @(rsp_vif.drvClk);     
-        end while (!rsp_vif.drvClk.resq_valid);
-        @(posedge rsp_vif.drvClk);
-          rsp_vif.drvClk.resp_ready = 1'b1;
-        @(posedge rsp_vif.drvClk);
-          rsp_vif.drvClk.resp_ready = 1'b0;
-      end
-    endtask
-endclass
 
 `endif // rsp_agent

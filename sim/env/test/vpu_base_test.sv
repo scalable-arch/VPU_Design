@@ -10,6 +10,8 @@ class vpu_base_test extends uvm_test;
   vpu_env env;
   vpu_src_if  src_vif;
   vpu_dst_if  dst_vif;
+  vpu_req_if  req_vif;
+  vpu_rsp_if  rsp_vif;
 
   function new(string name = "vpu_base_test", uvm_component parent);
     super.new(name, parent);
@@ -28,9 +30,13 @@ class vpu_base_test extends uvm_test;
 
     uvm_resource_db#(vpu_src_if)::read_by_type("src_vif", src_vif, this);
     uvm_resource_db#(vpu_dst_if)::read_by_type("dst_vif", dst_vif, this);
+    uvm_resource_db#(vpu_req_if)::read_by_type("req_vif", req_vif, this);
+    uvm_resource_db#(vpu_rsp_if)::read_by_type("rsp_vif", rsp_vif, this);
 
     uvm_config_db#(vpu_src_if)::set(this, "env.src_agt[*]", "src_vif", src_vif);
     uvm_config_db#(vpu_dst_if)::set(this, "env.dst_agt", "dst_vif", dst_vif);
+    uvm_config_db#(vpu_req_if)::set(this, "env.req_agt", "req_vif", req_vif);
+    uvm_config_db#(vpu_rsp_if)::set(this, "env.rsp_agt", "rsp_vif", rsp_vif);
 
   endfunction: build_phase
 

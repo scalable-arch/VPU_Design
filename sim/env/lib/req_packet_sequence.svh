@@ -50,6 +50,10 @@ class req_packet_sequence extends req_packet_sequence_base;
     repeat(req_count) begin
       `uvm_do_with(req, {
         opcode inside {[1:14]};
+        dst0 inside {[0:(1<<16)]};
+        src0 inside {[0:(1<<16)]};
+        src1 inside {[0:(1<<16)]};
+        src2 inside {[0:(1<<16)]};
       });
     end
  	endtask: body

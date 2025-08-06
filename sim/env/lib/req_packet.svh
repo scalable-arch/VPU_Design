@@ -4,13 +4,13 @@
 
 class req_packet extends uvm_sequence_item;
 
-  rand  bit [7:0] opcode;
-  rand  bit [SRAM_BANK_DEPTH_LG2-1:0] src0;
-  rand  bit [SRAM_BANK_DEPTH_LG2-1:0] src1;
-  rand  bit [SRAM_BANK_DEPTH_LG2-1:0] src2;
-  rand  bit [SRAM_BANK_DEPTH_LG2-1:0] dst0;
-  rand  bit [STREAM_ID_WIDTH-1:0]     stream_id;
-  rand  bit [23:0]                    imm;
+  rand  bit [7:0]   opcode;
+  rand  bit [23:0]  src0;
+  rand  bit [23:0]  src1;
+  rand  bit [23:0]  src2;
+  rand  bit [23:0]  dst0;
+  rand  bit [23:0]  imm;
+  rand  bit [STREAM_ID_WIDTH-1:0] stream_id;
   //rand  bit [23:0]   imm;
 
   `uvm_object_utils_begin(req_packet)

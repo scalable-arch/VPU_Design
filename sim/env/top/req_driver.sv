@@ -37,16 +37,18 @@ class req_driver extends uvm_driver #(req_packet);
   endtask: run_phase
 
   virtual task send_req(input req_packet item);
-    wait(req_vif.rst_n !== 1'b0);
-    @(req_vif.drvClk);
+    //wait(req_vif.rst_n !== 1'b0);
+    //@(req_vif.drvClk);
+    wait (req_vif.rst_n !== 1'b0);
+    @(req_vif.drvClk iff (req_vif.rst_n === 1'b1)) begin
       req_vif.drvClk.valid          <= 1'b1;
-      req_vif.drvClk.h2d_req_instr  <= {{item.opcode}, {item.dst}, {item.src0}, 
+      req_vif.drvClk.h2d_req_instr  <= {{item.opcode}, {item.dst0}, {item.src0}, 
                                         {item.src1}, {item.src2}, {item.imm}};
       req_vif.drvClk.stream_id      <= item.stream_id;
+    end
 
-    wait(req_vif.drvClk.ready == 1'b1);
-    @(req_vif.drvClk);
-      req_vif.drvClk.valid            <= 1'b0;
+    @(req_vif.drvClk iff req_vif.drvClk.ready);
+      req_vif.drvClk.valid          <= 1'b0;
   endtask
 endclass
 `endif // req_driver

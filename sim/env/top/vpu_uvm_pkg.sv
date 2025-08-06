@@ -9,10 +9,13 @@ package vpu_uvm_pkg;
     import  VPU_PKG::*;
     typedef virtual VPU_SRC_PORT_IF vpu_src_if;
     typedef virtual VPU_DST_PORT_IF vpu_dst_if;
+    typedef virtual VPU_REQ_IF      vpu_req_if;
+    typedef virtual VPU_RESPONSE_IF vpu_rsp_if;
 
     `include  "uvm_macros.svh"
     `include  "dst_packet.svh"
     `include  "src_packet.svh"
+    `include  "req_packet.svh"
     `include  "simple_sram_model.sv"
     `include  "simple_dst_responder.sv"
 
@@ -22,7 +25,12 @@ package vpu_uvm_pkg;
 
     `include  "dst_agent.sv"
     `include  "src_agent.sv"
+    
+    `include  "req_driver.sv"
+    `include  "req_monitor.sv"
+    `include  "req_agent.sv"
 
+    `include  "rsp_agent.sv"
     
     `include  "vpu_seq_lib.svh"
     `include  "vpu_env.sv"

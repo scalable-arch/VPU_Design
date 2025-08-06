@@ -40,7 +40,7 @@ class req_monitor extends uvm_monitor;
     forever begin
         tr = req_packet::type_id::create("tr", this);
         monitor_req(tr);
-        `uvm_info("Send Src_Rsp Packet", {"\n", tr.sprint()}, UVM_MEDIUM);
+        //`uvm_info("Send Src_Rsp Packet", {"\n", tr.sprint()}, UVM_MEDIUM);
         transaction_aport.write(tr); // publish full
     end
   endtask
@@ -48,18 +48,19 @@ class req_monitor extends uvm_monitor;
   virtual task monitor_req(req_packet tr);
     wait (req_vif.rst_n !== 0);
 
-    do begin
-        @(req_vif.oMonClk);     
-    end while (!req_vif.oMonClk.valid);
-     
-    tr.opcode     = req_vif.oMonClk.h2d_req_instr.opcode;
-    tr.src0       = req_vif.oMonClk.h2d_req_instr.src0;
-    tr.src1       = req_vif.oMonClk.h2d_req_instr.src1;
-    tr.src2       = req_vif.oMonClk.h2d_req_instr.src2;
-    tr.dst0       = req_vif.oMonClk.h2d_req_instr.dst0;
-    tr.stream_id  = req_vif.oMonClk.stream_id;
-    tr.imm        = req_vif.oMonClk.imm;
-    `uvm_info("REQ MONITOR", {"\n", tr.sprint()}, UVM_MEDIUM);
+    //do begin
+    //    @(req_vif.oMonClk);     
+    //end while (!req_vif.oMonClk.valid);
+    @(req_vif.oMonClk iff (req_vif.oMonClk.valid && req_vif.oMonClk.ready)) begin
+      tr.opcode     = req_vif.oMonClk.h2d_req_instr.opcode;
+      tr.src0       = req_vif.oMonClk.h2d_req_instr.src0;
+      tr.src1       = req_vif.oMonClk.h2d_req_instr.src1;
+      tr.src2       = req_vif.oMonClk.h2d_req_instr.src2;
+      tr.dst0       = req_vif.oMonClk.h2d_req_instr.dst0;
+      tr.stream_id  = req_vif.oMonClk.stream_id;
+      tr.imm        = req_vif.oMonClk.h2d_req_instr.imm;
+      `uvm_info("REQ MONITOR", {"\n", tr.sprint()}, UVM_MEDIUM);
+    end
   endtask
 endclass
 `endif // req_monitor

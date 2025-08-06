@@ -22,7 +22,7 @@ class src_monitor extends uvm_monitor;
 
         uvm_config_db#(vpu_src_if)::get(this, "", "src_vif", src_vif);
         uvm_config_db#(simple_sram_model)::get(this, "", "storage", storage);
-        
+
         transaction_aport = new("transaction_aport", this);
         request_aport = new("request_aport", this);
     endfunction: build_phase
@@ -55,10 +55,10 @@ class src_monitor extends uvm_monitor;
         forever begin
             tr = src_packet::type_id::create("tr", this);
             monitor_req(tr);
-            `uvm_info("Got Src_REQ Packet", {"\n", tr.sprint()}, UVM_MEDIUM);
+            //`uvm_info("Got Src_REQ Packet", {"\n", tr.sprint()}, UVM_MEDIUM);
             request_aport.write(tr); // publish request part
             monitor_rsp(tr);
-            `uvm_info("Send Src_Rsp Packet", {"\n", tr.sprint()}, UVM_MEDIUM);
+            //`uvm_info("Send Src_Rsp Packet", {"\n", tr.sprint()}, UVM_MEDIUM);
             transaction_aport.write(tr); // publish full
         end
     endtask
@@ -75,7 +75,6 @@ class src_monitor extends uvm_monitor;
     endtask
 
     virtual task monitor_rsp(src_packet tr);
-        wait (src_vif.iMonClk.rvalid !==0);
         @(src_vif.iMonClk iff (src_vif.iMonClk.rvalid === 1'b1));
             tr.rdata  = src_vif.iMonClk.rdata;
     endtask
