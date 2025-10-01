@@ -29,10 +29,10 @@ endclass: req_packet_sequence_base
 
 class req_packet_sequence extends req_packet_sequence_base;
 
-  int req_count = 10;
+  int req_count = 100;
 
-	`uvm_object_utils_begin(req_packet_sequence)
-    `uvm_field_int(req_count, UVM_ALL_ON)
+  `uvm_object_utils_begin(req_packet_sequence)
+  `uvm_field_int(req_count, UVM_ALL_ON)
   `uvm_object_utils_end
 
 	function new(string name = "req_packet_sequence");
