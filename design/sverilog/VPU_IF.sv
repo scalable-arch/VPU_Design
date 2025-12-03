@@ -1,3 +1,6 @@
+`ifndef VPU_IF_SV
+`define VPU_IF_SV
+
 `include "VPU_PKG.svh"
 
 interface VPU_REQ_IF
@@ -107,6 +110,24 @@ interface VPU_RESPONSE_IF
         output      resp_valid, resp_stream_id
     );
 
+    // synopsys translate_off
+    clocking drvClk @(posedge clk);
+        input  resp_valid;
+        input  resp_stream_id;
+        output resp_ready;
+    endclocking: drvClk
+
+    clocking iMonClk @(posedge clk);
+        input  resp_valid;
+        input  resp_stream_id;
+        input  resp_ready;
+    endclocking: iMonClk
+
+    clocking oMonClk @(posedge clk);
+        input  resp_valid;
+        input  resp_stream_id;
+        input  resp_ready;
+    endclocking: oMonClk
     //---------------------------------
     // Task For Verification
     //---------------------------------
@@ -342,3 +363,5 @@ interface VPU_RESET_IF(input logic clk);
     modport dut(input reset_n);
 endinterface: VPU_RESET_IF
 */
+
+`endif // VPU_IF_SV

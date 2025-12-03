@@ -1,6 +1,6 @@
 `include "VPU_PKG.svh"
 `define TIMEOUT_DELAY   100000000
-`define MEM_DEPTH 100
+`define MEM_DEPTH 10
 `define RANDOM_SEED     12123344
 
 import "DPI-C" context function string get_env_var(input string var_name);

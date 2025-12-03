@@ -57,7 +57,7 @@ lappend env_map "\${VPU_HOME}"         $env(VPU_HOME)
 lappend env_map "\${VPU_SIM_HOME}"     $env(VPU_HOME)/sim
 
 set design_filelists "$env(VPU_HOME)/design/filelist.f"
-set sim_filelists "$env(VPU_HOME)/sim/filelist.f"
+set sim_filelists "$env(VPU_HOME)/sim/env/compile.f"
                    
 # Add design files
 add_files -fileset sources_1 [get_filename_arr $design_filelists $env_map]
@@ -78,11 +78,15 @@ set sv_root_path "$env(VPU_HOME)/sw/C/DPI/xsim.dir/work/xsc/"
 #
 set_property SOURCE_SET sources_1 [get_filesets sim_1]
 set_property include_dirs $search_path [get_filesets sim_1]
-set_property top VPU_TOP_TB [get_filesets sim_1]
+set_property top top [get_filesets sim_1]
 set_property -name {xsim.compile.xvlog.more_options} -value {-L uvm} -objects [get_filesets sim_1]
 set_property -name {xsim.elaborate.xelab.more_options} -value {-L uvm} -objects [get_filesets sim_1]
 set_property -name {xsim.elaborate.xelab.more_options} -value "-sv_root $sv_root_path -sv_lib dpi" -objects [get_filesets sim_1]
+set_property -name {xsim.simulate.xsim.more_options} -value {-testplusarg UVM_TESTNAME=vpu_base_test} -objects [get_filesets sim_1]
 
 launch_simulation
 
 run all
+
+#start_gui
+quit
