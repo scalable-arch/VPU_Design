@@ -31,7 +31,7 @@ module VPU_FP_LOG
         .s_axis_a_tvalid                    (start_i),
         .s_axis_a_tdata                     (extended_op_0),
         .m_axis_result_tvalid               (done_o),
-        .m_axis_result_tdata                (result),
+        .m_axis_result_tdata                (result)
     );
     
 
