@@ -158,7 +158,7 @@ module VPU_TOP_TB ();
         for(int i = 0; i < `MEM_DEPTH; i++) begin
             for(int j = 0; j < SRAM_READ_PORT_CNT; j++) begin
                 for(int k = 0; k < ELEM_PER_DIM_CNT; k++) begin
-                    if((_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FSQRT) || (_opcode ==VPU_PKG::VPU_H2D_REQ_OPCODE_FRECIP)) begin
+                    if((_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FSQRT) || (_opcode ==VPU_PKG::VPU_H2D_REQ_OPCODE_FRECIP) || (_opcode ==VPU_PKG::VPU_H2D_REQ_OPCODE_FLOG)) begin
                         operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump_2[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_READ_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
                     end else begin
                         operand.operand[(k*VPU_PKG::OPERAND_WIDTH)+:VPU_PKG::OPERAND_WIDTH] = mem_dump[((i*VPU_PKG::ELEM_PER_DIM_CNT*VPU_PKG::SRAM_READ_PORT_CNT)+(j)*(VPU_PKG::ELEM_PER_DIM_CNT))+k];
@@ -183,7 +183,7 @@ module VPU_TOP_TB ();
         end 
         repeat (3) @(posedge clk);
     endtask
-    
+    // TY: log
     task fill_golden_ref_mem(VPU_PKG::vpu_h2d_req_opcode_t _opcode);
         if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FADD) begin
             sub_path = "/add_out.txt";
@@ -213,6 +213,8 @@ module VPU_TOP_TB ();
             sub_path = "/sqrt_out.txt";
         end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FRECIP) begin
             sub_path = "/reci_out.txt";
+        end else if(_opcode == VPU_PKG::VPU_H2D_REQ_OPCODE_FLOG) begin
+            sub_path = "/log_out.txt";
         end else begin
             sub_path = "";
         end

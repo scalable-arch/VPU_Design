@@ -18,6 +18,7 @@ ${VPU_HOME}/design/sverilog/VPU_FP_AVG2.sv
 ${VPU_HOME}/design/sverilog/VPU_FP_AVG3.sv
 ${VPU_HOME}/design/sverilog/VPU_FP_EXP.sv
 ${VPU_HOME}/design/sverilog/VPU_FP_RECIP.sv
+${VPU_HOME}/design/sverilog/VPU_FP_LOG.sv
 ${VPU_HOME}/design/sverilog/VPU_FP_ADD2.sv
 ${VPU_HOME}/design/sverilog/VPU_FP_ADD3.sv
 ${VPU_HOME}/design/sverilog/VPU_EXEC_UNIT.sv

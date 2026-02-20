@@ -14,7 +14,7 @@
 #define DATA_SIZE 96
 #define VECTOR_SIZE 32
 #define LINES 100
-
+// TY: log
 typedef enum {
     OP_ADD,
     OP_SUB,
@@ -28,6 +28,7 @@ typedef enum {
     OP_EXP,
     OP_SQRT,
     OP_SQRTRECIPROCAL,
+    OP_LOG, 
     OP_REDSUM,
     OP_REDMAX,
     OP_INVALID,
@@ -35,6 +36,7 @@ typedef enum {
 } Operation;
 
 // 연산자 이름 배열
+// TY: log
 const char* operation_names[] = {
     "add",
     "sub",
@@ -48,9 +50,10 @@ const char* operation_names[] = {
     "exp",
     "sqrt",
     "reci",
+    "log",
     "redsum",
     "redmax"
-};
+}; 
 
 void bf16_to_fp32(uint16_t bf16_value, float* fp_data) {
     uint32_t sign = (bf16_value >> 15) & 0x1;
@@ -178,6 +181,20 @@ void vector_exp(xip_fpo_t* dst, xip_fpo_t* src1) {
     for (int i = 0; i < VECTOR_SIZE; i++) {
         fp32_src[i] = xip_fpo_get_flt(src1[i]);
         xip_fpo_exp_flt(&fp32_intermed[i], fp32_src[i]);
+        bf16_intermed[i] = fp32_to_bf16_truncate(fp32_intermed[i]);
+        bf16_to_fp32(bf16_intermed[i], &fp32_dst[i]);
+        xip_fpo_set_flt(dst[i], fp32_dst[i]);
+    }
+}
+// TY: log
+void vector_log(xip_fpo_t* dst, xip_fpo_t* src1) {
+    float fp32_src[VECTOR_SIZE];
+    float fp32_intermed[VECTOR_SIZE];
+    uint16_t bf16_intermed[VECTOR_SIZE];
+    float fp32_dst[VECTOR_SIZE];
+    for (int i = 0; i < VECTOR_SIZE; i++) {
+        fp32_src[i] = xip_fpo_get_flt(src1[i]);
+        xip_fpo_log_flt(&fp32_intermed[i], fp32_src[i]);
         bf16_intermed[i] = fp32_to_bf16_truncate(fp32_intermed[i]);
         bf16_to_fp32(bf16_intermed[i], &fp32_dst[i]);
         xip_fpo_set_flt(dst[i], fp32_dst[i]);
@@ -356,9 +373,9 @@ void load_data_from_file(const char* input_file, const char* positive_input_file
         // 모든 연산에 대해 반복
         for (int op_code = OP_ADD; op_code < OP_COUNT; op_code++) {
             float* current_fp_data;
-
+            // TY: log
             // 연산에 따라 적절한 데이터 선택
-            if (op_code == OP_SQRT || op_code == OP_SQRTRECIPROCAL) {
+            if (op_code == OP_SQRT || op_code == OP_SQRTRECIPROCAL || op_code == OP_LOG) {
                 current_fp_data = positive_fp_data[line];
             } else {
                 current_fp_data = fp_data[line];
@@ -402,6 +419,9 @@ void load_data_from_file(const char* input_file, const char* positive_input_file
                     break;
                 case OP_EXP:
                     vector_exp(dst, src1);
+                    break;
+                case OP_LOG:
+                    vector_log(dst, src1); // TY: log
                     break;
                 case OP_SQRT:
                     vector_sqrt(dst, src1);

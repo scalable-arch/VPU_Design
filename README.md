@@ -14,6 +14,7 @@
 | EXP            | VEXP DST, SRC1              | 0000_1100   | {Opcode[7:0], DST[23:0], SRC1[23:0], 72'd0}                         | RTL (Xilinx)    | Get the exponential of each element in the vector          |  9   |
 | SQRT           | VSQRT DST, SRC1             | 0000_1101   | {Opcode[7:0], DST[23:0], SRC1[23:0], 72'd0}                         | RTL (Xilinx)    | Get the sqrt of each element in the vector                 |  5   |
 | Reciprocal SQRT| VSQRT DST, SRC1             | 0000_1110   | {Opcode[7:0], DST[23:0], SRC1[23:0], 72'd0}                         | RTL (Xilinx)    | Get the reciporcal sqrt of each element in the vector      |  10  |
+| LOG           | VLOG DST, SRC1             | 0000_1111   | {Opcode[7:0], DST[23:0], SRC1[23:0], 72'd0}                         | RTL (Xilinx)    | Get the natural logarithm of each element in the vector      |  9  |
 | ADD 3 operands | VADD3 DST, SRC1, SRC2, SRC3 | 0000_0101   | {Opcode[7:0], DST[23:0], SRC1[23:0], SRC2[23:0], SRC3[23:0], 25'd0} | RTL (Xilinx)    | Vector Addition with three operand                         |  5   |
 | MAX 3 operands | VMAX3 DST, SRC1, SRC3, SRC3 | 0000_1001   | {Opcode[7:0], DST[23:0], SRC1[23:0], SRC2[23:0], SRC3[23:0], 25'd0} | RTL (Xilinx)    | Compare three vectors and get only the larger elements     |  3   |
 | AVG 3 operands | VAVG3 DST, SRC1, SRC3, SRC3 | 0000_1011   | {Opcode[7:0], DST[23:0], SRC1[23:0], SRC2[23:0], SRC3[23:0], 25'd0} | RTL (Xilinx)    | Get average of three vector's each elements                |  10  |

@@ -34,6 +34,7 @@ module VPU_LANE
     wire     [OPERAND_WIDTH-1:0]            fp_sqrt_dout;
     wire     [OPERAND_WIDTH-1:0]            fp_exp_dout;
     wire     [OPERAND_WIDTH-1:0]            fp_recip_dout;
+    wire     [OPERAND_WIDTH-1:0]            fp_log_dout; // TY: log
     
     wire                                    fp_add2_done;
     wire                                    fp_add3_done;
@@ -46,6 +47,7 @@ module VPU_LANE
     wire                                    fp_sqrt_done;
     wire                                    fp_exp_done;
     wire                                    fp_recip_done;
+    wire                                    fp_log_done; // TY: log
     
     always_comb begin
         if(((opcode_i == VPU_H2D_REQ_OPCODE_FADD) || (opcode_i == VPU_H2D_REQ_OPCODE_FSUB))) begin
@@ -90,6 +92,10 @@ module VPU_LANE
         else if((opcode_i == VPU_H2D_REQ_OPCODE_FRECIP)) begin
             dout                            = fp_recip_dout;
             done                            = fp_recip_done;
+        end
+        else if((opcode_i == VPU_H2D_REQ_OPCODE_FLOG)) begin // TY: log
+            dout                            = fp_log_dout;
+            done                            = fp_log_done;
         end
         else begin
             dout                            = {OPERAND_WIDTH{1'b0}};
@@ -251,7 +257,21 @@ module VPU_LANE
         .result_o                           (fp_recip_dout),
         .done_o                             (fp_recip_done)
     );
-    
+
+// TY: log
+    //----------------------------------------------
+    // FP_LOG
+    //----------------------------------------------
+    VPU_FP_LOG # (
+    ) fp_log (
+        .clk                                (clk),
+        .rst_n                              (rst_n),
+        .op_0                               (operand_i[0]),
+        .start_i                            (start_i & (opcode_i == VPU_H2D_REQ_OPCODE_FLOG)),
+        .result_o                           (fp_log_dout),
+        .done_o                             (fp_log_done)
+    );
+
     assign  dout_o                          = dout;
     assign  done_o                          = done;
 endmodule

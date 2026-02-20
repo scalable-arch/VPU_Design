@@ -13,7 +13,7 @@ package VPU_PKG;
 
     /* VPU-Instruction Config */
     localparam  INSTR_WIDTH                 = 128;
-    localparam  INSTR_NUM                   = 14;
+    localparam  INSTR_NUM                   = 15; // TY: log
     localparam  OPCODE_WIDTH                = 8;
     localparam  OPERAND_WIDTH               = ELEM_WIDTH;
     localparam  OPERAND_ADDR_WIDTH          = 24;
@@ -86,7 +86,9 @@ package VPU_PKG;
         VPU_H2D_REQ_OPCODE_FAVG3            = 8'h0B,
         VPU_H2D_REQ_OPCODE_FEXP             = 8'h0C,
         VPU_H2D_REQ_OPCODE_FSQRT            = 8'h0D,
-        VPU_H2D_REQ_OPCODE_FRECIP           = 8'h0E
+        VPU_H2D_REQ_OPCODE_FRECIP           = 8'h0E,
+        VPU_H2D_REQ_OPCODE_FLOG             = 8'h0F // TY: log
+
     } vpu_h2d_req_opcode_t;
 
     // VPU Instruction

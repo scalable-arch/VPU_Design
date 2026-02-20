@@ -61,7 +61,8 @@ module VPU_DECODER
                 end 
                 VPU_H2D_REQ_OPCODE_FSQRT,
                 VPU_H2D_REQ_OPCODE_FEXP,
-                VPU_H2D_REQ_OPCODE_FRECIP: begin
+                VPU_H2D_REQ_OPCODE_FRECIP,
+                VPU_H2D_REQ_OPCODE_FLOG: begin // TY: log
                     operand_rvalid_n            = 3'b001; 
                 end
                 VPU_H2D_REQ_OPCODE_FADD3,

@@ -137,6 +137,29 @@ set_property -dict [list \
   CONFIG.Operation_Type {Square_root} \
   CONFIG.Result_Precision_Type {Custom} \
 ] [get_ips floating_point_sqrt]
+# TY: log
+# floating_point_log
+create_ip -name floating_point -vendor xilinx.com -library ip -version 7.1 -module_name floating_point_log
+set_property -dict [list \
+  CONFIG.A_Precision_Type {Single} \
+  CONFIG.C_A_Exponent_Width {8} \
+  CONFIG.C_A_Fraction_Width {24} \
+  CONFIG.C_Accum_Input_Msb {32} \
+  CONFIG.C_Accum_Lsb {-31} \
+  CONFIG.C_Accum_Msb {32} \
+  CONFIG.C_Has_OVERFLOW {true} \
+  CONFIG.C_Has_UNDERFLOW {true} \
+  CONFIG.C_Latency {8} \
+  CONFIG.C_Mult_Usage {Medium_Usage} \
+  CONFIG.C_Rate {1} \
+  CONFIG.C_Result_Exponent_Width {8} \
+  CONFIG.C_Result_Fraction_Width {24} \
+  CONFIG.Flow_Control {NonBlocking} \
+  CONFIG.Has_RESULT_TREADY {false} \
+  CONFIG.Maximum_Latency {false} \
+  CONFIG.Operation_Type {Logarithm} \
+  CONFIG.Result_Precision_Type {Single} \
+] [get_ips floating_point_log]
 
 update_compile_order -fileset sources_1
 generate_target all [get_files  $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_add_sub/floating_point_add_sub.xci]
@@ -185,3 +208,12 @@ export_ip_user_files -of_objects [get_files $env(VPU_HOME)/vivado/sim_project/si
 create_ip_run [get_files -of_objects [get_fileset sources_1] $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_sqrt/floating_point_sqrt.xci]
 launch_runs floating_point_sqrt_synth_1 -jobs 12
 wait_on_run floating_point_sqrt_synth_1
+
+# TY: log
+update_compile_order -fileset sources_1
+generate_target all [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_log/floating_point_log.xci]
+catch { config_ip_cache -export [get_ips -all floating_point_log] }
+export_ip_user_files -of_objects [get_files $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_log/floating_point_log.xci] -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] $env(VPU_HOME)/vivado/sim_project/sim.srcs/sources_1/ip/floating_point_log/floating_point_log.xci]
+launch_runs floating_point_log_synth_1 -jobs 12
+wait_on_run floating_point_log_synth_1
